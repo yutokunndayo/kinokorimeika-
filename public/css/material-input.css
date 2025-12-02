@@ -1,0 +1,81 @@
+/* 材料入力画面のデザイン */
+h2 {
+    color: #ff6b6b;
+    font-size: 1.5rem;
+    margin-top: 10px;
+    text-align: center;
+}
+
+#ingredient-list {
+    width: 100%;
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px 0;
+}
+
+.ingredient-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.ingredient-input, .quantity-input {
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    color: #5d4037;
+}
+
+.ingredient-input:focus, .quantity-input:focus {
+    border-color: #ff6b6b;
+}
+
+.ingredient-input { flex: 2; }
+.quantity-input { flex: 1; }
+
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+#add-ingredient, #remove-ingredient {
+    padding: 8px 15px;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: transform 0.1s;
+}
+
+#add-ingredient {
+    background-color: #a8e6cf;
+    color: #3b7a57;
+}
+
+#remove-ingredient {
+    background-color: #ffcccb;
+    color: #d32f2f;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 15px;
+    background-color: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #d94545;
+    transition: transform 0.1s;
+}
+
+.submit-btn:active {
+    transform: translateY(4px);
+    box-shadow: none;
+}

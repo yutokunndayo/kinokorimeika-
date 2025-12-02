@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>当たり！ | キノコリメイカー</title>
+    <link rel="stylesheet" href="/css/recipe-finish.css"> <!-- スタイルはrecipe-finishと共通化 -->
+    <link rel="stylesheet" href="/css/common.css">
+</head>
+<body>
+    <div class="container">
+        <h2 class="finish-title" style="color:#ffd93d;">★ ガチャ結果 ★</h2>
+        
+        <div class="image-area">
+            <!-- ガチャ結果は画像がない（DBに保存していない）場合が多いので、代替画像を表示 -->
+            <img src="/img/1402858_s.jpg" alt="料理イメージ" class="recipe-image">
+        </div>
+
+        <div id="recipe-details">
+             <h3 id="recipe-name" style="text-align:center; color:#5d4037; margin-bottom:10px;"></h3>
+             <p id="recipe-description" style="font-size:0.9em; color:#666; text-align:center;"></p>
+        </div>
+        
+        <div id="recipe-steps" class="recipe-details-box"></div>
+
+        <!-- ボタン類 -->
+        <div class="button-container">
+            <button id="share-button" class="action-btn share">このレシピをシェア</button>
+            <button id="return-button" class="action-btn return">TOPへ</button>
+        </div>
+    </div>
+    <script src="/js/amazing-cooking-screnn.js"></script>
+</body>
+</html>

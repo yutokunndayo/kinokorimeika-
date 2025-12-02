@@ -1,0 +1,71 @@
+/* ガチャ画面のデザイン */
+.title {
+    color: #ff6b6b;
+    font-size: 2rem;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.description {
+    text-align: center;
+    color: #888;
+    margin-bottom: 20px;
+}
+
+.gacha-machine-container {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.machine-illustration {
+    font-size: 150px;
+    animation: floating 3s ease-in-out infinite;
+}
+
+@keyframes floating {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+/* ガチャを回す時のアニメーション用クラス */
+.shake {
+    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes shake {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+    40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
+.draw-button {
+    width: 100%;
+    padding: 20px;
+    background-color: #ffd93d;
+    color: #333;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 5px 0 #c7a500;
+    margin-bottom: 15px;
+    transition: transform 0.1s;
+}
+
+.draw-button:active {
+    transform: translateY(5px);
+    box-shadow: none;
+}
+
+.back-button {
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    text-decoration: underline;
+    margin-bottom: 10px;
+}
