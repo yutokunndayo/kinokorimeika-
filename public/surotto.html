@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>献立スロット | 冷蔵庫の救世主</title>
-    <link rel="stylesheet" href="/css/surotto.css">
+    <title>献立スロット</title>
+    <link rel="stylesheet" href="./css/surotto.css">
+    <link rel="stylesheet" href="./css/common.css">
 </head>
 <body>
     <div id="start-screen" class="screen">
@@ -13,26 +14,18 @@
         <button id="cooking-start-button">どう料理するか決める！</button>
     </div>
     
-    <!-- スタイルルーレットは削除し、直接メインスロットへ -->
-    
     <div id="main-slot-screen" class="screen hidden">
         <div class="slot-machine">
-            <div class="header-display">
-                今日のテーマを決定中...
-            </div>
+            <div class="header-display">今日のテーマ</div>
             <div class="gogo-lamp">GOGO!</div>
             <div class="reels">
                 <div class="reel" id="reel0"><div class="reel-strip"></div></div>
                 <div class="reel" id="reel1"><div class="reel-strip"></div></div>
                 <div class="reel" id="reel2"><div class="reel-strip"></div></div>
             </div>
-            <!-- リールのラベルを追加 -->
-            <div class="reel-labels" style="display: flex; justify-content: space-around; color: #00ffff; font-size: 0.9em; margin-top: 5px; font-weight:bold;">
-                <span>調理法</span>
-                <span>ジャンル</span>
-                <span>気分</span>
+            <div class="reel-labels">
+                <span>調理法</span><span>ジャンル</span><span>気分</span>
             </div>
-
             <div id="result-display">
                 <h3>テーマ決定！</h3>
                 <p id="result-text"></p>
@@ -40,14 +33,14 @@
             </div>
             <div class="controls">
                 <div class="stop-buttons">
-                    <button class="stop-button" data-reel="0" disabled>止める</button>
-                    <button class="stop-button" data-reel="1" disabled>止める</button>
-                    <button class="stop-button" data-reel="2" disabled>止める</button>
+                    <button class="stop-button" data-reel="0" disabled>STOP</button>
+                    <button class="stop-button" data-reel="1" disabled>STOP</button>
+                    <button class="stop-button" data-reel="2" disabled>STOP</button>
                 </div>
                 <button id="start-button">スロットスタート</button>
             </div>
         </div>
     </div>
-    <script src="/js/surotto.js"></script>
+    <script src="./js/surotto.js"></script>
 </body>
 </html>

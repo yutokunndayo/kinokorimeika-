@@ -1,25 +1,22 @@
-/* 全体の共通スタイル（明るいキノコテーマ） */
+/* 全体の共通スタイル */
 body {
-    background-color: #fdf5e6; /* 薄いクリーム色 */
+    background-color: #fdf5e6;
     background-image: radial-gradient(#ff6b6b 1px, transparent 1px), radial-gradient(#ff6b6b 1px, transparent 1px);
     background-size: 20px 20px;
     background-position: 0 0, 10px 10px;
-    /* 背景の水玉模様でポップさを演出 */
-    
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
     margin: 0;
-    font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
-    color: #5d4037; /* 文字色は優しげな茶色 */
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    color: #5d4037;
 }
-
 .container {
     width: 375px;
     height: 720px;
     background: rgba(255, 255, 255, 0.95);
-    border: 4px solid #ff6b6b; /* 枠線をキノコ赤に */
+    border: 4px solid #ff6b6b;
     border-radius: 20px;
     padding: 20px;
     box-sizing: border-box;
@@ -30,8 +27,4 @@ body {
     position: relative;
     overflow: hidden;
 }
-
-/* ボタンの共通スタイル上書き */
-button {
-    font-family: inherit;
-}
+button { font-family: inherit; }

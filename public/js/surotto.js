@@ -3,43 +3,31 @@ window.addEventListener('DOMContentLoaded', () => {
     const spinStartSound = new Audio('/sound/ziyagura-reba.mp3');
     const stopSound = new Audio('/sound/bow-arrow-hit.mp3');
     const gogoSound = new Audio('/sound/ziyagura-gako.mp3');
-
-    function playSound(audio) {
-        audio.currentTime = 0;
-        audio.play().catch(error => console.log(`Error playing sound: ${error}`));
-    }
+    function playSound(audio) { audio.currentTime = 0; audio.play().catch(e=>{}); }
 
     const startScreen = document.getElementById('start-screen');
     const mainSlotScreen = document.getElementById('main-slot-screen');
     const screens = document.querySelectorAll('.screen');
     const cookingStartButton = document.getElementById('cooking-start-button');
     const startButton = document.getElementById('start-button');
-    const stopButtons = document.querySelectorAll('#main-slot-screen .stop-button');
+    const stopButtons = document.querySelectorAll('.stop-button');
     const nextButton = document.getElementById('next-button');
     const ingredientList = document.getElementById('ingredient-list');
-    const reelStrips = document.querySelectorAll('#main-slot-screen .reel-strip');
-    const reels = document.querySelectorAll('#main-slot-screen .reel');
+    const reelStrips = document.querySelectorAll('.reel-strip');
+    const reels = document.querySelectorAll('.reel');
     const gogoLamp = document.querySelector('.gogo-lamp');
     const resultDisplay = document.getElementById('result-display');
     const resultText = document.getElementById('result-text');
 
     let ingredients = [];
-    
-    // ★★★ リールの中身を「実用的」に変更 ★★★
-    // Reel 0: 調理法
     const methods = ['炒める', '煮る', '焼く', '蒸す', '揚げる', '和える', 'レンチン'];
-    // Reel 1: ジャンル
     const genres = ['和風', '洋風', '中華', 'エスニック', '韓国風', 'イタリアン'];
-    // Reel 2: 気分
     const moods = ['ガッツリ', 'さっぱり', 'ヘルシー', 'ピリ辛', '濃厚', '時短', 'おつまみ'];
-
     const reelData = [methods, genres, moods];
-    
     const SYMBOL_HEIGHT = 60;
     const REEL_REPEAT_COUNT = 10;
     let isSpinning = false;
     let stoppedReels = [false, false, false];
-    let isLampLitThisTurn = false;
     let animationFrameIds = [null, null, null];
     let reelPositions = [0, 0, 0];
     let finalResults = {}; 
@@ -51,9 +39,8 @@ window.addEventListener('DOMContentLoaded', () => {
             try {
                 const parsedIngredients = JSON.parse(ingredientsParam);
                 ingredients = parsedIngredients.map(item => `${item.name}(${item.quantity})`);
-            } catch (e) { ingredients = ['材料の解析に失敗']; }
+            } catch (e) { ingredients = ['解析失敗']; }
         }
-        
         ingredientList.innerHTML = '';
         ingredients.forEach(ing => {
             const li = document.createElement('li');
@@ -77,8 +64,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 el.textContent = symbolText;
                 strip.appendChild(el);
             });
-            const oneLoopHeight = symbols.length * SYMBOL_HEIGHT;
-            const initialOffset = -(oneLoopHeight * (REEL_REPEAT_COUNT - 3));
+            const initialOffset = -(symbols.length * SYMBOL_HEIGHT * (REEL_REPEAT_COUNT - 3));
             strip.style.transition = 'none';
             strip.style.transform = `translateY(${initialOffset}px)`;
             reelPositions[index] = initialOffset;
@@ -91,15 +77,12 @@ window.addEventListener('DOMContentLoaded', () => {
         strip.style.transition = 'none';
         let lastTime = 0;
         const speed = 0.8;
-
         function spinLoop(timestamp) {
             if (!lastTime) lastTime = timestamp;
             const delta = timestamp - lastTime;
             reelPositions[index] += speed * delta;
-            const symbols = reelData[index];
-            const oneLoopHeight = symbols.length * SYMBOL_HEIGHT;
-            const resetPoint = -oneLoopHeight;
-            if (reelPositions[index] > resetPoint) reelPositions[index] -= oneLoopHeight;
+            const oneLoopHeight = reelData[index].length * SYMBOL_HEIGHT;
+            if (reelPositions[index] > -oneLoopHeight) reelPositions[index] -= oneLoopHeight;
             strip.style.transform = `translateY(${reelPositions[index]}px)`;
             lastTime = timestamp;
             animationFrameIds[index] = requestAnimationFrame(spinLoop);
@@ -109,13 +92,11 @@ window.addEventListener('DOMContentLoaded', () => {
 
     function onMainGameEnd() {
         isSpinning = false;
-        
         finalResults = {
             method: reels[0].dataset.finalSymbol,
             genre: reels[1].dataset.finalSymbol,
             mood: reels[2].dataset.finalSymbol
         };
-
         const resultMessage = `テーマ:【${finalResults.genre}】×【${finalResults.method}】\n気分: ${finalResults.mood}`;
         resultText.innerText = resultMessage;
         resultDisplay.classList.add('show');
@@ -130,10 +111,9 @@ window.addEventListener('DOMContentLoaded', () => {
     
     nextButton.addEventListener('click', () => { 
         playSound(clickSound);
-        // ★ データの保存形式を変更
         sessionStorage.setItem('ingredients', JSON.stringify(ingredients));
         sessionStorage.setItem('theme', JSON.stringify(finalResults));
-        window.location.href = '/recipe-finish.html';
+        window.location.href = './recipe-finish.html';
     });
     
     startButton.addEventListener('click', () => {
@@ -142,14 +122,11 @@ window.addEventListener('DOMContentLoaded', () => {
         isSpinning = true;
         stoppedReels = [false, false, false];
         resultDisplay.classList.remove('show');
-        
-        isLampLitThisTurn = Math.random() < 0.3; 
-        gogoLamp.classList.toggle('lit', isLampLitThisTurn);
-        if (isLampLitThisTurn) setTimeout(() => { playSound(gogoSound); }, 600);
-
+        const isLampLit = Math.random() < 0.3; 
+        gogoLamp.classList.toggle('lit', isLampLit);
+        if (isLampLit) setTimeout(() => { playSound(gogoSound); }, 600);
         startButton.disabled = true;
         stopButtons.forEach(b => b.disabled = false);
-        
         reels.forEach((_, i) => { startReel(i); });
     });
 
@@ -163,7 +140,6 @@ window.addEventListener('DOMContentLoaded', () => {
             
             const strip = reelStrips[index];
             strip.style.transform = `translateY(${reelPositions[index]}px)`;
-            
             const symbols = reelData[index];
             const finalSymbolIndex = Math.floor(Math.random() * symbols.length);
             reels[index].dataset.finalSymbol = symbols[finalSymbolIndex];

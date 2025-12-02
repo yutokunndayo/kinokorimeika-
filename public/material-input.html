@@ -3,40 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>キノコリメイカー</title>
-    <link rel="stylesheet" href="/css/title.css">
-    <link rel="stylesheet" href="/css/common.css">
+    <title>冷蔵庫の救世主</title>
+    <link rel="stylesheet" href="./css/material-input.css">
+    <link rel="stylesheet" href="./css/common.css">
 </head>
 <body>
-
     <div class="container">
-        <!-- キノコのキャラクター (SVG画像) -->
-        <div class="title-logo">
-            <svg class="kinoko-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <!-- 傘 -->
-                <path d="M10 55 Q 50 5 90 55" fill="#ff6b6b" stroke="#fff" stroke-width="2" />
-                <circle cx="30" cy="35" r="6" fill="white" opacity="0.9" />
-                <circle cx="60" cy="30" r="8" fill="white" opacity="0.9" />
-                <circle cx="78" cy="48" r="5" fill="white" opacity="0.9" />
-                <!-- 柄 -->
-                <path d="M35 55 Q 30 95 50 98 Q 70 95 65 55" fill="#fdf5e6" stroke="#fff" stroke-width="2" />
-                <!-- 顔 -->
-                <circle cx="43" cy="70" r="2.5" fill="#333" />
-                <circle cx="57" cy="70" r="2.5" fill="#333" />
-                <path d="M48 75 Q 50 78 52 75" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round" />
-            </svg>
-            <h1 class="title-text">キノコリメイカー</h1>
-        </div>
-
-        <p style="text-align: center; color: #fff; margin-bottom: 30px; font-size: 0.9em; text-shadow: 0 0 5px rgba(0,0,0,0.5);">
-            冷蔵庫の余り物を<br>キノコが美味しくリメイクします！
+        <h2>冷蔵庫の余り物を教えて！</h2>
+        <p style="color:#5d4037; margin-bottom:20px; font-size:0.9rem; text-align:center;">
+            中途半端に残った食材を3〜4つ入力してください。<br>
+            AIが意外なリメイクレシピを提案します。
         </p>
-
-        <button id="btn-1" class="button">1, 余り物をリメイク</button>
-        <button id="btn-2" class="button">2, レシピガチャ</button>
+        <div id="ingredient-list"></div>
+        <div class="button-group">
+            <button id="add-ingredient">+ 食材を追加</button>
+            <button id="remove-ingredient">- 削除</button>
+        </div>
+        <button class="submit-btn">これで献立を考える！</button>
     </div>
-
-    <script src="./js/title.js"></script>
-
+    <script src="./js/material-input.js"></script>
 </body>
 </html>

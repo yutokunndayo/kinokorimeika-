@@ -106,3 +106,13 @@ body {
     color: #333;
     box-shadow: 0 0 20px rgba(255, 217, 61, 0.6);
 }
+.title-logo { display: flex; flex-direction: column; align-items: center; margin-top: 50px; margin-bottom: 20px; }
+.kinoko-icon { width: 140px; height: 140px; animation: bounce 2s infinite ease-in-out; }
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+.title-text { font-size: 2.2rem; font-weight: bold; color: #ff6b6b; margin: 10px 0 0 0; }
+.button {
+    width: 85%; padding: 16px; margin-bottom: 20px; border-radius: 50px; font-size: 1.1rem; font-weight: 700; cursor: pointer; text-align: center; transition: all 0.3s ease; background: #fff; border: 2px solid #ff6b6b;
+}
+.button:active { transform: scale(0.98); }
+#btn-1 { background: #ff6b6b; color: white; }
+#btn-2 { border-color: #ffd93d; color: #333; background: #ffd93d; }
