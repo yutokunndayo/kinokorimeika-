@@ -1,57 +1,65 @@
-/* ページの基本設定 */
-/* common.cssで背景設定済みのため削除 */
-
-/* コンテナ設定 */
-/* common.cssで設定済みのため削除 */
+/* ページの基本設定（common.css優先） */
 
 /* タイトルロゴ周り */
 .title-logo {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 20px;
-    margin-bottom: 10px;
+    margin-top: 20px; /* ロゴがはみ出すので少し下げる */
+    margin-bottom: 5px;
     width: 100%;
 }
 
 .main-logo {
-    width: 90%; /* ロゴを横幅いっぱいに */
-    max-width: 300px;
+    width: 120%; /* コンテナの幅を超えて大きく表示！ */
+    max-width: none; /* 制限解除 */
+    margin-left: -10%; /* 左にずらして中央に配置 */
+    margin-right: -10%;
     height: auto;
-    filter: drop-shadow(0 3px 0px rgba(0,0,0,0.1));
+    filter: drop-shadow(0 5px 0px rgba(0,0,0,0.1));
     animation: float 3s ease-in-out infinite;
+    position: relative;
+    z-index: 2; /* マスコットや枠線より手前に */
 }
 
 @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-5px) scale(1.02); } /* ふわふわしながら少し拡大 */
 }
 
 /* マスコットエリア */
 .mascot-area {
-    margin-top: 10px;
-    width: 160px;
-    height: 160px;
+    margin-top: -200px; /* ロゴにガッツリかぶせる */
+    width: 300px; 
+    height: 230px;
     border-radius: 50%;
     overflow: hidden;
-    border: 4px solid #FFD93D; /* 黄色の枠 */
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    border: 5px solid #FFD93D;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
     background: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 1; /* ロゴの後ろへ */
 }
 
 .mascot-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    /* 画像の背景を切り抜いていない場合、これで少し調整 */
 }
+
+/* ボタンの共通スタイル */
+/* ページの基本設定（common.css優先） */
 
 /* ボタンの共通スタイル */
 .button {
     width: 90%;
-    padding: 15px;
-    margin-bottom: 15px;
-    border-radius: 50px;
+    max-width: 400px;
+    padding: 14px;
+    margin-bottom: 12px;
+    border-radius: 40px;
     font-size: 1.2rem;
     font-weight: 700;
     cursor: pointer;
@@ -65,27 +73,26 @@
     gap: 10px;
     color: #fff;
     text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+    position: relative;
+    z-index: 3;
+    margin-top: 20px; /* ロゴとの間隔 */
 }
 
 .button:active {
-    transform: translateY(4px);
+    transform: translateY(3px);
     box-shadow: none;
 }
 
-.icon {
-    font-size: 1.4rem;
-}
+.icon { font-size: 1.4rem; }
 
-/* 1番目のボタン（メイン：サーモンピンク） */
 #btn-1 {
-    background: #FF9AA2; /* パステルレッド */
+    background: #FF9AA2; 
     border: 3px solid #fff;
-    box-shadow: 0 0 0 3px #FF9AA2, 0 6px 0 #E57373; /* 二重線風シャドウ */
+    box-shadow: 0 0 0 2px #FF9AA2, 0 5px 0 #E57373; 
 }
 
-/* 2番目のボタン（サブ：パステルイエロー） */
 #btn-2 {
-    background: #FFDAC1; /* パステルオレンジ */
+    background: #FFDAC1; 
     border: 3px solid #fff;
-    box-shadow: 0 0 0 3px #FFDAC1, 0 6px 0 #E0B090;
+    box-shadow: 0 0 0 2px #FFDAC1, 0 5px 0 #E0B090; 
 }

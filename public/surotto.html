@@ -8,36 +8,41 @@
     <link rel="stylesheet" href="./css/common.css">
 </head>
 <body>
-    <div id="start-screen" class="screen">
-        <h2>今回の余り物たち</h2>
-        <ul id="ingredient-list"></ul>
-        <button id="cooking-start-button">どう料理するか決める！</button>
-    </div>
-    
-    <div id="main-slot-screen" class="screen hidden">
-        <div class="slot-machine">
-            <div class="header-display">今日のテーマ</div>
-            <div class="gogo-lamp">GOGO!</div>
-            <div class="reels">
-                <div class="reel" id="reel0"><div class="reel-strip"></div></div>
-                <div class="reel" id="reel1"><div class="reel-strip"></div></div>
-                <div class="reel" id="reel2"><div class="reel-strip"></div></div>
+    <div class="container">
+        <div class="title-logo">
+            <img src="./img/gurumeika-.png" alt="グルメメイカー" class="main-logo">
+            <div class="mascot-area">
+                <img src="./img/gurumeika-3.jpg" alt="シェフ" class="mascot-img">
             </div>
-            <div class="reel-labels">
-                <span>調理法</span><span>ジャンル</span><span>気分</span>
-            </div>
-            <div id="result-display">
-                <h3>テーマ決定！</h3>
-                <p id="result-text"></p>
-                <button id="next-button" disabled>レシピを生成する</button>
-            </div>
-            <div class="controls">
-                <div class="stop-buttons">
-                    <button class="stop-button" data-reel="0" disabled>STOP</button>
-                    <button class="stop-button" data-reel="1" disabled>STOP</button>
-                    <button class="stop-button" data-reel="2" disabled>STOP</button>
+        </div>
+
+        <div id="start-screen" class="screen">
+            <h2>今回の余り物たち</h2>
+            <ul id="ingredient-list"></ul>
+            <button id="cooking-start-button">どう料理するか決める！</button>
+        </div>
+        
+        <div id="main-slot-screen" class="screen hidden">
+            <div class="slot-machine">
+                <div class="header-display">今日のテーマ</div>
+                <div class="gogo-lamp">GOGO!</div>
+                <div class="reels">
+                    <div class="reel" id="reel0"><div class="reel-strip"></div></div>
+                    <div class="reel" id="reel1"><div class="reel-strip"></div></div>
+                    <div class="reel" id="reel2"><div class="reel-strip"></div></div>
                 </div>
-                <button id="start-button">スロットスタート</button>
+                <div id="result-display">
+                    <p id="result-text"></p>
+                    <button id="next-button" disabled>レシピを生成する</button>
+                </div>
+                <div class="controls">
+                    <div class="stop-buttons">
+                        <button class="stop-button" data-reel="0" disabled>STOP</button>
+                        <button class="stop-button" data-reel="1" disabled>STOP</button>
+                        <button class="stop-button" data-reel="2" disabled>STOP</button>
+                    </div>
+                    <button id="start-button">スロットスタート</button>
+                </div>
             </div>
         </div>
     </div>

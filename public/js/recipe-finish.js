@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
             titleElement.textContent = "レシピ情報がありません"; return;
         }
         
-        let recipeName, description, steps;
+        let recipeName, summary, detail, fullDescription, steps;
 
         // レシピ生成API
         try {
@@ -26,15 +26,21 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             if (!recipeResponse.ok) throw new Error('APIエラー');
             const recipeApiData = await recipeResponse.json();
+            
             recipeName = recipeApiData.recipeName;
-            description = recipeApiData.description;
+            summary = recipeApiData.summary || "要約なし";
+            detail = recipeApiData.detail || recipeApiData.description;
+            fullDescription = recipeApiData.description || (summary + "\n" + detail);
             steps = recipeApiData.steps; 
+            
             titleElement.textContent = recipeName;
         } catch (error) {
             console.error(error);
             titleElement.textContent = "まかない飯（生成エラー）";
             recipeName = "名無しのまかない飯";
-            description = "エラーが発生しました。とりあえず炒めればOK！";
+            summary = "エラーが発生しました。";
+            detail = "とりあえず炒めればOK！";
+            fullDescription = summary + detail;
             steps = ["適当に切る", "火を通す", "味を整える"];
         }
 
@@ -56,16 +62,55 @@ document.addEventListener('DOMContentLoaded', () => {
             imageElement.src = '/img/1402858_s.jpg';
         }
 
-        // 表示処理
-        let detailsHtml = `<p style="margin-bottom:15px; font-weight:bold;">${description}</p>`;
+        // --- 表示処理 ---
+        // 解説文コンテナ（初期状態はJSでクラス操作するため hidden クラスはHTMLには直接書かずCSSで制御）
+        let detailsHtml = `
+            <div class="summary-box">
+                <p class="summary-text"><strong>${summary}</strong></p>
+            </div>
+            
+            <div class="detail-container">
+                <button id="toggle-detail-btn" class="toggle-btn">詳しい解説を見る ▼</button>
+                <div id="detail-content" class="detail-content">
+                    <p class="detail-text">${detail}</p>
+                </div>
+            </div>
+        `;
+
         detailsHtml += '<h4>作り方</h4><ul>';
         steps.forEach((step, index) => { detailsHtml += `<li><span style="color:#ff6b6b; font-weight:bold;">${index + 1}.</span> ${step}</li>`; });
         detailsHtml += '</ul>';
         detailsElement.innerHTML = detailsHtml;
 
-        // ボタンイベント
+        // --- ボタンのクリックイベント（高さを動的に計算） ---
+        const toggleBtn = document.getElementById('toggle-detail-btn');
+        const detailContent = document.getElementById('detail-content');
+        
+        if(toggleBtn && detailContent) {
+            toggleBtn.addEventListener('click', () => {
+                const isOpen = detailContent.classList.contains('open');
+                
+                if (isOpen) {
+                    // 閉じる処理
+                    detailContent.style.maxHeight = null; // nullにするとCSSの0に戻る
+                    detailContent.classList.remove('open');
+                    toggleBtn.textContent = '詳しい解説を見る ▼';
+                    toggleBtn.classList.remove('open');
+                } else {
+                    // 開く処理
+                    detailContent.classList.add('open');
+                    // コンテンツの実際の高さを取得してmax-heightに設定
+                    detailContent.style.maxHeight = detailContent.scrollHeight + "px";
+                    toggleBtn.textContent = '解説を閉じる ▲';
+                    toggleBtn.classList.add('open');
+                }
+            });
+        }
+        // ------------------------
+
+        // 保存ボタン
         saveButton.addEventListener('click', async () => {
-            const recipeToSave = { recipeName, description, steps };
+            const recipeToSave = { recipeName, description: fullDescription, steps };
             try {
                 const saveResponse = await fetch('/api/save-recipe', {
                     method: 'POST',
