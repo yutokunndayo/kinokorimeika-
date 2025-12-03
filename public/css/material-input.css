@@ -2,7 +2,7 @@
 h2 {
     color: #FF9AA2;
     font-size: 2.2rem;
-    margin-top: 5px; /* ロゴがあるので詰める */
+    margin-top: 30px; /* ロゴがないので余白を広げる */
     margin-bottom: 25px;
     text-align: center;
     font-weight: bold;
@@ -12,8 +12,7 @@ h2 {
 
 #ingredient-list {
     width: 100%;
-    /* ロゴが入るので高さを少し制限 */
-    max-height: 250px; 
+    max-height: none; 
     flex-grow: 1;
     overflow-y: auto;
     padding: 5px;

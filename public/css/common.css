@@ -17,12 +17,12 @@ body {
 .container {
     width: 500px;
     height: auto; 
-    min-height: 500px;
+    min-height: 500px; /* 高さを確保 */
     
     background: rgba(255, 255, 255, 0.95);
     border: 6px solid #FFC1CC;
     border-radius: 30px;
-    padding: 15px;
+    padding: 20px;
     box-sizing: border-box;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
     display: flex;
@@ -32,54 +32,3 @@ body {
 }
 
 button { font-family: inherit; }
-
-/* --- ロゴ・マスコットの共通スタイル（復活） --- */
-
-.title-logo {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 20px;
-    margin-bottom: 5px;
-    width: 100%;
-    flex-shrink: 0; 
-}
-
-.main-logo {
-    width: 120%; /* 巨大サイズ */
-    max-width: none;
-    margin-left: -10%;
-    margin-right: -10%;
-    height: auto;
-    filter: drop-shadow(0 5px 0px rgba(0,0,0,0.1));
-    animation: float 3s ease-in-out infinite;
-    position: relative;
-    z-index: 2;
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0) scale(1); }
-    50% { transform: translateY(-5px) scale(1.02); }
-}
-
-.mascot-area {
-    margin-top: -30px; /* ロゴに少しかぶせる */
-    width: 180px; 
-    height: 180px;
-    border-radius: 50%;
-    overflow: hidden;
-    border: 5px solid #FFD93D;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-    background: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    z-index: 1;
-}
-
-.mascot-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}

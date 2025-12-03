@@ -1,36 +1,35 @@
 /* ページの基本設定（common.css優先） */
 
-/* タイトルロゴ周り */
+/* --- タイトル画面専用のロゴ・マスコットスタイル --- */
 .title-logo {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 20px; /* ロゴがはみ出すので少し下げる */
+    margin-top: 20px;
     margin-bottom: 5px;
     width: 100%;
 }
 
 .main-logo {
-    width: 120%; /* コンテナの幅を超えて大きく表示！ */
-    max-width: none; /* 制限解除 */
-    margin-left: -10%; /* 左にずらして中央に配置 */
+    width: 120%; /* 画面からはみ出す巨大サイズ */
+    max-width: none;
+    margin-left: -10%;
     margin-right: -10%;
     height: auto;
     filter: drop-shadow(0 5px 0px rgba(0,0,0,0.1));
     animation: float 3s ease-in-out infinite;
     position: relative;
-    z-index: 2; /* マスコットや枠線より手前に */
+    z-index: 2;
 }
 
 @keyframes float {
     0%, 100% { transform: translateY(0) scale(1); }
-    50% { transform: translateY(-5px) scale(1.02); } /* ふわふわしながら少し拡大 */
+    50% { transform: translateY(-5px) scale(1.02); }
 }
 
-/* マスコットエリア */
 .mascot-area {
-    margin-top: -200px; /* ロゴにガッツリかぶせる */
-    width: 300px; 
+    margin-top: -150px; /* ロゴにかぶせる */
+    width: 230px; /* 大きめサイズ */
     height: 230px;
     border-radius: 50%;
     overflow: hidden;
@@ -41,7 +40,7 @@
     justify-content: center;
     align-items: center;
     position: relative;
-    z-index: 1; /* ロゴの後ろへ */
+    z-index: 1;
 }
 
 .mascot-img {
@@ -49,9 +48,6 @@
     height: 100%;
     object-fit: cover;
 }
-
-/* ボタンの共通スタイル */
-/* ページの基本設定（common.css優先） */
 
 /* ボタンの共通スタイル */
 .button {
@@ -75,7 +71,7 @@
     text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
     position: relative;
     z-index: 3;
-    margin-top: 20px; /* ロゴとの間隔 */
+    margin-top: 20px;
 }
 
 .button:active {
