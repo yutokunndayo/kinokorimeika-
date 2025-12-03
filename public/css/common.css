@@ -1,30 +1,37 @@
 /* 全体の共通スタイル */
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap');
+
 body {
-    background-color: #fdf5e6;
-    background-image: radial-gradient(#ff6b6b 1px, transparent 1px), radial-gradient(#ff6b6b 1px, transparent 1px);
-    background-size: 20px 20px;
-    background-position: 0 0, 10px 10px;
+    /* 背景画像を設定 */
+    background: url('../img/bg.jpg') no-repeat center center fixed;
+    background-size: cover;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
     margin: 0;
-    font-family: "Helvetica Neue", Arial, sans-serif;
+    /* 丸みのある可愛いフォントに変更 */
+    font-family: "M PLUS Rounded 1c", "Helvetica Neue", Arial, sans-serif;
     color: #5d4037;
 }
+
 .container {
     width: 375px;
     height: 720px;
+    /* ガラス風から、白い画用紙・メニュー表のような雰囲気に */
     background: rgba(255, 255, 255, 0.95);
-    border: 4px solid #ff6b6b;
-    border-radius: 20px;
-    padding: 20px;
+    border: 5px solid #FFC1CC; /* パステルピンクの枠線 */
+    outline: 5px dotted #fff; /* 内側にドットのラインを入れて可愛く */
+    outline-offset: -10px;
+    border-radius: 30px;
+    padding: 25px;
     box-sizing: border-box;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     display: flex;
     flex-direction: column;
     align-items: center;
     position: relative;
     overflow: hidden;
 }
+
 button { font-family: inherit; }

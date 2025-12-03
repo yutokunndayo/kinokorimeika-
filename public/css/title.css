@@ -1,118 +1,91 @@
-/* front/css/title.css */
-
 /* ページの基本設定 */
-body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-color: #f0f2f5;
-    /* 背景も少し明るく変更 */
-}
+/* common.cssで背景設定済みのため削除 */
 
-/* コンテナ */
-.container {
-    width: 375px;
-    height: 720px;
-    /* ガラス風デザインの調整 */
-    background: rgba(255, 255, 255, 0.1); 
-    backdrop-filter: blur(10px);
-    border: 2px solid rgba(255, 255, 255, 0.5);
-    border-radius: 20px;
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-    
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    box-sizing: border-box;
-}
+/* コンテナ設定 */
+/* common.cssで設定済みのため削除 */
 
 /* タイトルロゴ周り */
 .title-logo {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 50px;
-    margin-bottom: 20px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    width: 100%;
 }
 
-/* キノコのアニメーション */
-.kinoko-icon {
-    width: 140px;
-    height: 140px;
-    filter: drop-shadow(0 5px 15px rgba(255, 107, 107, 0.4));
-    animation: bounce 2s infinite ease-in-out; /* ぽよんぽよん動く */
+.main-logo {
+    width: 90%; /* ロゴを横幅いっぱいに */
+    max-width: 300px;
+    height: auto;
+    filter: drop-shadow(0 3px 0px rgba(0,0,0,0.1));
+    animation: float 3s ease-in-out infinite;
 }
 
-@keyframes bounce {
-    0%, 100% { transform: translateY(0) scale(1); }
-    50% { transform: translateY(-10px) scale(1.05); }
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
 }
 
-.title-text {
-    font-family: 'Orbitron', sans-serif; /* そのまま使用、または丸ゴシックなどに変更も可 */
-    font-size: 2.2rem;
-    font-weight: bold;
-    color: #ff6b6b; /* キノコの赤色 */
-    text-shadow: 2px 2px 0px #fff, 0 0 10px rgba(255, 107, 107, 0.5);
-    margin: 10px 0 0 0;
-    letter-spacing: 2px;
+/* マスコットエリア */
+.mascot-area {
+    margin-top: 10px;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid #FFD93D; /* 黄色の枠 */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    background: #fff;
+}
+
+.mascot-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* 画像の背景を切り抜いていない場合、これで少し調整 */
 }
 
 /* ボタンの共通スタイル */
 .button {
-    width: 85%;
-    padding: 16px;
-    margin-bottom: 20px;
+    width: 90%;
+    padding: 15px;
+    margin-bottom: 15px;
     border-radius: 50px;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     font-weight: 700;
     cursor: pointer;
     text-align: center;
-    transition: all 0.3s ease;
-    background: transparent;
-    border: 2px solid #fff;
+    transition: all 0.2s ease;
+    border: none;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     color: #fff;
-    text-shadow: 0 0 5px rgba(0,0,0,0.3);
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
 }
 
 .button:active {
-    transform: scale(0.98);
+    transform: translateY(4px);
+    box-shadow: none;
 }
 
-/* 1番目のボタン（メイン：赤系） */
+.icon {
+    font-size: 1.4rem;
+}
+
+/* 1番目のボタン（メイン：サーモンピンク） */
 #btn-1 {
-    border-color: #ff6b6b;
-    color: #ff6b6b;
-    background: rgba(255, 255, 255, 0.9);
-}
-#btn-1:hover:not(:disabled) {
-    background: #ff6b6b;
-    color: #fff;
-    box-shadow: 0 0 20px rgba(255, 107, 107, 0.6);
+    background: #FF9AA2; /* パステルレッド */
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 3px #FF9AA2, 0 6px 0 #E57373; /* 二重線風シャドウ */
 }
 
-/* 2番目のボタン（サブ：黄色系） */
+/* 2番目のボタン（サブ：パステルイエロー） */
 #btn-2 {
-    border-color: #ffd93d;
-    color: #ffd93d;
-    background: rgba(255, 255, 255, 0.9);
+    background: #FFDAC1; /* パステルオレンジ */
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 3px #FFDAC1, 0 6px 0 #E0B090;
 }
-#btn-2:hover:not(:disabled) {
-    background: #ffd93d;
-    color: #333;
-    box-shadow: 0 0 20px rgba(255, 217, 61, 0.6);
-}
-.title-logo { display: flex; flex-direction: column; align-items: center; margin-top: 50px; margin-bottom: 20px; }
-.kinoko-icon { width: 140px; height: 140px; animation: bounce 2s infinite ease-in-out; }
-@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-.title-text { font-size: 2.2rem; font-weight: bold; color: #ff6b6b; margin: 10px 0 0 0; }
-.button {
-    width: 85%; padding: 16px; margin-bottom: 20px; border-radius: 50px; font-size: 1.1rem; font-weight: 700; cursor: pointer; text-align: center; transition: all 0.3s ease; background: #fff; border: 2px solid #ff6b6b;
-}
-.button:active { transform: scale(0.98); }
-#btn-1 { background: #ff6b6b; color: white; }
-#btn-2 { border-color: #ffd93d; color: #333; background: #ffd93d; }

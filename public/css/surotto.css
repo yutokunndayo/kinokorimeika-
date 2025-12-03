@@ -1,154 +1,22 @@
-/* スロット画面のデザイン */
-.screen {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
+.screen { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; }
 .hidden { display: none !important; }
-
 h2 { color: #ff6b6b; }
-
-#ingredient-list {
-    list-style: none;
-    padding: 0;
-    width: 100%;
-    text-align: left;
-}
-
-#ingredient-list li {
-    background: #fff;
-    border-bottom: 1px solid #eee;
-    padding: 8px;
-    color: #555;
-}
-
-/* スロットマシン本体 */
-.slot-machine {
-    width: 100%;
-    background: #333; /* スロットだけは少しメカっぽく黒で */
-    border-radius: 15px;
-    padding: 15px;
-    color: white;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-}
-
-.header-display {
-    text-align: center;
-    margin-bottom: 10px;
-    font-size: 0.9rem;
-    color: #ffd93d;
-}
-
-.reels {
-    display: flex;
-    justify-content: space-between;
-    height: 120px;
-    background: #fff;
-    border-radius: 5px;
-    overflow: hidden;
-    position: relative;
-    color: #333;
-}
-
-.reel {
-    width: 32%;
-    height: 100%;
-    position: relative;
-    border-left: 1px solid #ccc;
-    border-right: 1px solid #ccc;
-}
-
-.reel-strip {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-}
-
-.reel-strip div {
-    height: 60px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    font-size: 14px;
-    text-align: center;
-    border-bottom: 1px solid #eee;
-}
-
-/* GOGOランプ */
-.gogo-lamp {
-    width: 40px;
-    height: 40px;
-    background: #555;
-    border-radius: 50%;
-    margin: 0 auto 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 10px;
-    color: #333;
-}
-.gogo-lamp.lit {
-    background: #ff00ff;
-    color: white;
-    box-shadow: 0 0 10px #ff00ff;
-}
-
-/* 操作ボタン */
-.controls { margin-top: 15px; }
-.stop-buttons {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-}
-.stop-button {
-    width: 30%;
-    padding: 8px;
-    background: #ddd;
-    border: none;
-    border-radius: 5px;
-}
-.stop-button:not(:disabled) {
-    background: #ff6b6b;
-    color: white;
-    cursor: pointer;
-}
-
-#start-button {
-    width: 100%;
-    padding: 10px;
-    background: #ffd93d;
-    border: none;
-    border-radius: 5px;
-    font-weight: bold;
-    color: #333;
-    cursor: pointer;
-}
+#ingredient-list { list-style: none; padding: 0; width: 100%; text-align: left; }
+#ingredient-list li { background: #fff; border-bottom: 1px solid #eee; padding: 8px; color: #555; }
+.slot-machine { width: 100%; background: #333; border-radius: 15px; padding: 15px; color: white; }
+.header-display { text-align: center; margin-bottom: 10px; color: #ffd93d; }
+.reels { display: flex; justify-content: space-between; height: 120px; background: #fff; border-radius: 5px; overflow: hidden; position: relative; color: #333; }
+.reel { width: 32%; height: 100%; position: relative; border-left: 1px solid #ccc; }
+.reel-strip { position: absolute; top: 0; left: 0; width: 100%; }
+.reel-strip div { height: 60px; display: flex; justify-content: center; align-items: center; font-weight: bold; border-bottom: 1px solid #eee; }
+.reel-labels { display: flex; justify-content: space-around; color: #00ffff; font-size: 0.9em; margin-top: 5px; font-weight:bold; }
+.gogo-lamp { width: 40px; height: 40px; background: #555; border-radius: 50%; margin: 0 auto 10px; display: flex; justify-content: center; align-items: center; font-size: 10px; color: #333; }
+.gogo-lamp.lit { background: #ff00ff; color: white; box-shadow: 0 0 10px #ff00ff; }
+.stop-buttons { display: flex; justify-content: space-between; margin-bottom: 10px; margin-top: 15px;}
+.stop-button { width: 30%; padding: 8px; background: #ddd; border: none; border-radius: 5px; }
+.stop-button:not(:disabled) { background: #ff6b6b; color: white; cursor: pointer; }
+#start-button { width: 100%; padding: 10px; background: #ffd93d; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
 #start-button:disabled { background: #555; color: #888; }
-
-#result-display {
-    background: rgba(255,255,255,0.9);
-    color: #333;
-    padding: 10px;
-    border-radius: 5px;
-    margin-top: 10px;
-    text-align: center;
-    display: none;
-}
+#result-display { background: rgba(255,255,255,0.9); color: #333; padding: 10px; border-radius: 5px; margin-top: 10px; text-align: center; display: none; }
 #result-display.show { display: block; }
-
-#cooking-start-button, #next-button {
-    width: 100%;
-    padding: 15px;
-    background: #ff6b6b;
-    color: white;
-    border: none;
-    border-radius: 50px;
-    font-weight: bold;
-    margin-top: 20px;
-    cursor: pointer;
-}
+#cooking-start-button, #next-button { width: 100%; padding: 15px; background: #ff6b6b; color: white; border: none; border-radius: 50px; font-weight: bold; margin-top: 20px; cursor: pointer; }

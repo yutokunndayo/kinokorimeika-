@@ -20,10 +20,20 @@ window.addEventListener('DOMContentLoaded', () => {
     const resultText = document.getElementById('result-text');
 
     let ingredients = [];
-    const methods = ['炒める', '煮る', '焼く', '蒸す', '揚げる', '和える', 'レンチン'];
-    const genres = ['和風', '洋風', '中華', 'エスニック', '韓国風', 'イタリアン'];
-    const moods = ['ガッツリ', 'さっぱり', 'ヘルシー', 'ピリ辛', '濃厚', '時短', 'おつまみ'];
-    const reelData = [methods, genres, moods];
+   /* public/js/surotto.js 33行目付近 */
+
+    // ★★★ リールの中身を「科学・実験」テーマに変更 ★★★
+    
+    // Reel 0: 調理法 (科学的なアプローチ)
+    const methods = ['分子調理', '低温調理', '燻製', 'キャラメリゼ', '発酵', '乳化', '抽出'];
+    
+    // Reel 1: ジャンル (意外性重視)
+    const genres = ['錯覚フレンチ', '実験中華', '未来食', 'フェイクフード', '融合料理', '再現料理'];
+    
+    // Reel 2: 気分 (チャレンジ精神)
+    const moods = ['脳がバグる味', '見た目とのギャップ', '高級食材風', '化学反応', '未知の体験', '背徳の味'];
+
+  const reelData = [methods, genres, moods];
     const SYMBOL_HEIGHT = 60;
     const REEL_REPEAT_COUNT = 10;
     let isSpinning = false;
