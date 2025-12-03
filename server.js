@@ -1,7 +1,7 @@
 const express = require('express');
-const https = require('https'); // SDKを使わず標準機能で通信
+const https = require('https');
 const path = require('path');
-const FormData = require('form-data'); // 画像データ送信に必要
+const FormData = require('form-data');
 const sqlite3 = require('sqlite3').verbose();
 require('dotenv').config();
 
@@ -18,99 +18,122 @@ const db = new sqlite3.Database(path.join(__dirname, 'yaminabe.db'), (err) => {
     console.log('データベース接続成功');
 });
 
-// --- ヘルパー関数 ---
-function getRandomElement(arr) {
-    return arr[Math.floor(Math.random() * arr.length)];
+// --- APIキー読み込み用ヘルパー関数（強力なゴミ取り機能付き） ---
+function getCleanApiKey(keyName) {
+    const key = process.env[keyName];
+    if (!key) return "";
+    // 印刷可能な英数字・記号以外（改行、スペース、全角文字、制御文字など）を全て削除
+    return key.replace(/[^\x21-\x7E]/g, '');
 }
 
-// 実用的なレシピ名を生成
-function generatePracticalRecipeName(ingredientsList, theme) {
-    const mainIng = ingredientsList[0].split('(')[0]; 
-    const subIng = ingredientsList[1] ? ingredientsList[1].split('(')[0] : '';
-    const { method, genre, mood } = theme;
+// --- Gemini API 呼び出し関数 ---
+async function callGeminiAPI(ingredients, theme) {
+    // APIキーをクリーンに読み込む
+    const apiKey = getCleanApiKey('GEMINI_API_KEY');
+    if (!apiKey) throw new Error("Gemini APIキーが設定されていません");
 
-    let suffix = '料理';
-    if (method === '炒める') suffix = '炒め';
-    if (method === '煮る') suffix = '煮';
-    if (method === '焼く') suffix = '焼き';
-    if (method === '蒸す') suffix = '蒸し';
-    if (method === '揚げる') suffix = '揚げ';
-    if (method === '和える') suffix = '和え';
-    if (method === 'レンチン') suffix = 'レンジ蒸し';
-
-    let genrePrefix = '';
-    if (genre === '中華') genrePrefix = getRandomElement(['中華風', 'ピリ辛', 'オイスター', 'ごま油香る']);
-    if (genre === '洋風') genrePrefix = getRandomElement(['洋風', 'ガーリック', 'バター醤油', 'ハーブ香る']);
-    if (genre === '和風') genrePrefix = getRandomElement(['和風', '甘辛', 'だし香る', 'さっぱり']);
-    if (genre === 'エスニック') genrePrefix = getRandomElement(['エスニック風', 'カレー風味', 'スパイシー']);
-    if (genre === '韓国風') genrePrefix = getRandomElement(['韓国風', '旨辛', 'コチュジャン']);
-    if (genre === 'イタリアン') genrePrefix = getRandomElement(['イタリアン', 'トマト風味', 'チーズ']);
-
-    let moodPrefix = '';
-    if (mood === 'ガッツリ') moodPrefix = 'ご飯が進む！';
-    if (mood === 'さっぱり') moodPrefix = '無限に食べられる！';
-    if (mood === 'ヘルシー') moodPrefix = '罪悪感なし！';
-    if (mood === '時短') moodPrefix = '5分で完成！';
-    if (mood === 'ピリ辛') moodPrefix = 'やみつき！';
-    if (mood === '濃厚') moodPrefix = 'リッチな味わい！';
-    if (mood === 'おつまみ') moodPrefix = 'ビールに合う！';
-
-    const baseName = subIng ? `${mainIng}と${subIng}の${genrePrefix}${suffix}` : `${mainIng}の${genrePrefix}${suffix}`;
-    return { name: baseName, catchCopy: moodPrefix };
-}
-
-// 実用的な調理工程を生成
-function generatePracticalSteps(ingredientsList, theme) {
-    const { method, genre } = theme;
-    const steps = [];
-    const ingNames = ingredientsList.map(i => i.split('(')[0]);
-
-    steps.push(`【下準備】${ingNames.join('、')}を食べやすい大きさに切ります。`);
-
-    let seasoning = '塩コショウ';
-    if (genre === '和風') seasoning = '醤油、みりん、酒、だしの素';
-    if (genre === '洋風') seasoning = 'コンソメ、塩コショウ、バター';
-    if (genre === '中華') seasoning = '鶏ガラスープの素、オイスターソース、ごま油';
-    if (genre === 'エスニック') seasoning = 'ナンプラー、レモン汁、砂糖';
-    if (genre === '韓国風') seasoning = 'コチュジャン、醤油、砂糖、ごま油';
-    if (genre === 'イタリアン') seasoning = 'オリーブオイル、塩、ニンニク、粉チーズ';
-
-    if (method === '炒める') {
-        steps.push(`フライパンに油を熱し、火の通りにくい食材から順に中火で炒めます。`);
-        steps.push(`全体に火が通ったら、${seasoning}を加えて強火でサッと炒め合わせます。`);
-    } else if (method === '煮る') {
-        steps.push(`鍋に食材と、具材が浸るくらいの水、${seasoning}を入れます。`);
-        steps.push(`落とし蓋をして、食材が柔らかくなるまで弱火〜中火で10分ほどコトコト煮込みます。`);
-    } else if (method === '焼く') {
-        steps.push(`フライパンまたはトースターで、食材に焼き色がつくまでじっくり焼きます。`);
-        steps.push(`仕上げに${seasoning}を回しかけ、香ばしい香りが立つまで焼きます。`);
-    } else if (method === 'レンチン') {
-        steps.push(`耐熱容器に食材を入れ、ふんわりとラップをかけます。`);
-        steps.push(`電子レンジ(600W)で3〜5分加熱します。熱いうちに${seasoning}を加えてよく混ぜ合わせます。`);
-    } else {
-        steps.push(`食材を${method}調理します。`);
-        steps.push(`${seasoning}で味を調えます。`);
+    const promptText = `
+   あなたは「味覚の科学者」です。以下の食材を使って、
+    「きゅうり+ハチミツ=メロン」や「プリン+醤油=ウニ」のような、
+    **意外性があり、かつ理論的に美味しそうな（あるいは再現性のある）**レシピを1つ考案してください
+    
+    【食材】: ${ingredients.join(', ')}
+    【テーマ】: 調理法「${theme.method}」、ジャンル「${theme.genre}」、気分「${theme.mood}」
+    
+    以下のフォーマットの **JSONデータのみ** を出力してください（Markdown記法は不要）。
+    {
+        "recipeName": "料理名（テーマを反映した面白い名前）",
+        "summary": "短いキャッチコピー（20文字以内）",
+        "detail": "なぜこの組み合わせなのかの理論的解説（例: 香気成分が似ているため〜など）",
+        "steps": [
+            "調理手順1（下準備）",
+            "調理手順2（調理工程）",
+            "調理手順3（調理工程）",
+            "調理手順4（仕上げ）"
+        ]
     }
-    steps.push(`お皿に盛り付けて完成です！お好みでネギやゴマを散らしてください。`);
-    return steps;
+    `;
+
+    const requestData = JSON.stringify({
+        contents: [{ parts: [{ text: promptText }] }],
+        generationConfig: { responseMimeType: "application/json" }
+    });
+
+    return new Promise((resolve, reject) => {
+        const options = {
+            hostname: 'generativelanguage.googleapis.com',
+            // モデル名を 'gemini-2.5-flash' に指定
+            path: `/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(requestData)
+            }
+        };
+
+        const req = https.request(options, (res) => {
+            let data = '';
+            res.on('data', (chunk) => data += chunk);
+            res.on('end', () => {
+                if (res.statusCode !== 200) {
+                    console.error(`Gemini API Error Body: ${data}`);
+                    reject(new Error(`Gemini API Error: ${res.statusCode}`));
+                    return;
+                }
+                try {
+                    const jsonResponse = JSON.parse(data);
+                    if (jsonResponse.candidates && jsonResponse.candidates[0] && jsonResponse.candidates[0].content) {
+                        const text = jsonResponse.candidates[0].content.parts[0].text;
+                        resolve(JSON.parse(text));
+                    } else {
+                        reject(new Error("Gemini APIからの応答が不正です"));
+                    }
+                } catch (e) {
+                    reject(e);
+                }
+            });
+        });
+
+        req.on('error', (e) => reject(e));
+        req.write(requestData);
+        req.end();
+    });
+}
+
+// --- 定型文生成（APIエラー時の予備） ---
+function generateFallbackRecipe(ingredients, theme) {
+    const mainIng = ingredients[0] ? ingredients[0].split('(')[0] : '謎の食材';
+    const { method, genre, mood } = theme;
+    
+    return {
+        recipeName: `${genre}風 ${mainIng}の${method}`,
+        summary: `${mood}な味わい！`,
+        detail: `${ingredients.join('、')}を使用し、${method}で素材の味を引き出しました。${genre}の要素を取り入れた、${mood}な一品です。（※AI生成に失敗したため定型文を表示しています）`,
+        steps: [
+            `${ingredients.join('、')}を食べやすい大きさに切ります。`,
+            `フライパンまたは鍋で${method}調理します。`,
+            `調味料を加えて味を整えます。`,
+            `お皿に盛り付けて完成です。`
+        ]
+    };
 }
 
 // --- APIエンドポイント ---
 
-// 1. 画像生成API (Stability AI・直接通信版)
+// 1. 画像生成API (Stability AI)
 app.post('/api/generate-image', async (req, res) => {
     const { prompt } = req.body;
     if (!prompt) return res.status(400).json({ error: 'プロンプトが必要です。' });
     console.log('Stability AIへのプロンプト:', prompt);
 
-    const apiKey = process.env.STABILITY_API_KEY;
+    const apiKey = getCleanApiKey('STABILITY_API_KEY');
+    
     if (!apiKey) {
-        console.error('APIキー設定なし: .envを確認してください');
+        console.error("Stability APIキーが設定されていません");
         return res.status(500).json({ imageUrl: '/img/1402858_s.jpg' });
     }
 
     try {
-        console.log('画像生成リクエスト送信...');
         const form = new FormData();
         form.append('prompt', prompt);
         form.append('output_format', 'png');
@@ -139,7 +162,7 @@ app.post('/api/generate-image', async (req, res) => {
                     res.json({ imageUrl });
                 });
             } else {
-                 console.error(`APIエラー: Status ${response.statusCode}`);
+                 console.error(`Stability API エラー: Status ${response.statusCode}`);
                  res.status(500).json({ imageUrl: '/img/1402858_s.jpg' });
             }
         });
@@ -153,30 +176,36 @@ app.post('/api/generate-image', async (req, res) => {
     }
 });
 
-// 2. レシピ生成API
-app.post('/api/generate-recipe', (req, res) => {
+// 2. レシピ生成API (AI版 + フォールバック + ログ出力強化)
+app.post('/api/generate-recipe', async (req, res) => {
     try {
         const { ingredients, theme } = req.body; 
         if (!ingredients || !theme) return res.status(400).json({ error: 'データ不足' });
         
-        const nameData = generatePracticalRecipeName(ingredients, theme);
-        const steps = generatePracticalSteps(ingredients, theme);
-        
-        // ★ここを変更: 要約と解説を分ける
-        const summary = nameData.catchCopy; 
-        // 長い解説文を生成
-        const detail = `${ingredients.join('、')}を使った、${theme.mood}な${theme.genre}レシピです。素材の味を活かしつつ、${theme.method}で調理することで食欲をそそる仕上がりになります。隠し味やアレンジを加えることで、さらに自分好みの味に近づけることができます。ぜひお試しください！`;
+        console.log("レシピ生成開始:", theme);
 
-        // descriptionも互換性のために一応残しつつ、summaryとdetailを返す
-        const description = `${summary} ${detail}`;
+        try {
+            // Gemini APIで生成を試みる
+            const aiRecipe = await callGeminiAPI(ingredients, theme);
+            
+            // ★生成成功時にターミナルへ出力
+            console.log("\n====== AIレシピ生成結果 ======");
+            console.log(`【レシピ名】: ${aiRecipe.recipeName}`);
+            console.log(`【要約】: ${aiRecipe.summary}`);
+            console.log(`【解説】: ${aiRecipe.detail}`);
+            console.log("==============================\n");
+            
+            // descriptionは後方互換性のため結合
+            aiRecipe.description = `${aiRecipe.summary} ${aiRecipe.detail}`;
+            res.json(aiRecipe);
 
-        res.json({ 
-            recipeName: nameData.name, 
-            summary: summary, 
-            detail: detail,
-            description: description,
-            steps: steps 
-        });
+        } catch (apiError) {
+            console.error("AI生成失敗（フォールバックを使用）:", apiError.message);
+            const fallback = generateFallbackRecipe(ingredients, theme);
+            fallback.description = `${fallback.summary} ${fallback.detail}`;
+            res.json(fallback);
+        }
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: '生成失敗' });
