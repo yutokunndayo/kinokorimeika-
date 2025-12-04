@@ -18,33 +18,32 @@ const db = new sqlite3.Database(path.join(__dirname, 'yaminabe.db'), (err) => {
     console.log('データベース接続成功');
 });
 
-// --- APIキー読み込み用ヘルパー関数（強力なゴミ取り機能付き） ---
+// --- APIキー読み込み用ヘルパー関数 ---
 function getCleanApiKey(keyName) {
     const key = process.env[keyName];
     if (!key) return "";
-    // 印刷可能な英数字・記号以外（改行、スペース、全角文字、制御文字など）を全て削除
     return key.replace(/[^\x21-\x7E]/g, '');
 }
 
 // --- Gemini API 呼び出し関数 ---
 async function callGeminiAPI(ingredients, theme) {
-    // APIキーをクリーンに読み込む
     const apiKey = getCleanApiKey('GEMINI_API_KEY');
     if (!apiKey) throw new Error("Gemini APIキーが設定されていません");
 
+    // ★修正: 調理法(method)は指定せず、AIに考えてもらう
     const promptText = `
-   あなたは「味覚の科学者」です。以下の食材を使って、
-    「きゅうり+ハチミツ=メロン」や「プリン+醤油=ウニ」のような、
-    **意外性があり、かつ理論的に美味しそうな（あるいは再現性のある）**レシピを1つ考案してください
+    あなたはクリエイティブなシェフです。以下の食材とテーマを使って、ユニークなレシピを考案してください。
     
     【食材】: ${ingredients.join(', ')}
-    【テーマ】: 調理法「${theme.method}」、ジャンル「${theme.genre}」、気分「${theme.mood}」
+    【テーマ】: ジャンル「${theme.genre}」、気分「${theme.mood}」
+    
+    ※調理法（焼く、煮る、分子調理など）は、食材とジャンルに合わせてあなたが最適かつユニークなものを提案してください。
     
     以下のフォーマットの **JSONデータのみ** を出力してください（Markdown記法は不要）。
     {
         "recipeName": "料理名（テーマを反映した面白い名前）",
         "summary": "短いキャッチコピー（20文字以内）",
-        "detail": "なぜこの組み合わせなのかの理論的解説（例: 香気成分が似ているため〜など）",
+        "detail": "料理の詳しい解説。科学的・実験的なニュアンスを含めて、なぜその調理法を選んだのか、どんな味がするのかを100〜150文字程度で魅力的に説明してください。",
         "steps": [
             "調理手順1（下準備）",
             "調理手順2（調理工程）",
@@ -62,7 +61,6 @@ async function callGeminiAPI(ingredients, theme) {
     return new Promise((resolve, reject) => {
         const options = {
             hostname: 'generativelanguage.googleapis.com',
-            // モデル名を 'gemini-2.5-flash' に指定
             path: `/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
             method: 'POST',
             headers: {
@@ -103,16 +101,16 @@ async function callGeminiAPI(ingredients, theme) {
 // --- 定型文生成（APIエラー時の予備） ---
 function generateFallbackRecipe(ingredients, theme) {
     const mainIng = ingredients[0] ? ingredients[0].split('(')[0] : '謎の食材';
-    const { method, genre, mood } = theme;
+    const { genre, mood } = theme;
     
     return {
-        recipeName: `${genre}風 ${mainIng}の${method}`,
+        recipeName: `${genre}風 ${mainIng}の実験調理`,
         summary: `${mood}な味わい！`,
-        detail: `${ingredients.join('、')}を使用し、${method}で素材の味を引き出しました。${genre}の要素を取り入れた、${mood}な一品です。（※AI生成に失敗したため定型文を表示しています）`,
+        detail: `${ingredients.join('、')}を使用し、素材のポテンシャルを引き出しました。${genre}の要素を取り入れた、${mood}な一品です。（※AI生成に失敗したため定型文を表示しています）`,
         steps: [
             `${ingredients.join('、')}を食べやすい大きさに切ります。`,
-            `フライパンまたは鍋で${method}調理します。`,
-            `調味料を加えて味を整えます。`,
+            `フライパンで加熱し、謎の化学反応（メイラード反応）を起こします。`,
+            `調味料を加えて味のバランスを整えます。`,
             `お皿に盛り付けて完成です。`
         ]
     };
@@ -176,7 +174,7 @@ app.post('/api/generate-image', async (req, res) => {
     }
 });
 
-// 2. レシピ生成API (AI版 + フォールバック + ログ出力強化)
+// 2. レシピ生成API
 app.post('/api/generate-recipe', async (req, res) => {
     try {
         const { ingredients, theme } = req.body; 
@@ -185,17 +183,12 @@ app.post('/api/generate-recipe', async (req, res) => {
         console.log("レシピ生成開始:", theme);
 
         try {
-            // Gemini APIで生成を試みる
             const aiRecipe = await callGeminiAPI(ingredients, theme);
-            
-            // ★生成成功時にターミナルへ出力
             console.log("\n====== AIレシピ生成結果 ======");
             console.log(`【レシピ名】: ${aiRecipe.recipeName}`);
             console.log(`【要約】: ${aiRecipe.summary}`);
-            console.log(`【解説】: ${aiRecipe.detail}`);
             console.log("==============================\n");
             
-            // descriptionは後方互換性のため結合
             aiRecipe.description = `${aiRecipe.summary} ${aiRecipe.detail}`;
             res.json(aiRecipe);
 
