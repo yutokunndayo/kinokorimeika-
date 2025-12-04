@@ -1,0 +1,28 @@
+{
+  "name": "kinokorimeika-",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yutokunndayo/kinokorimeika-.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/yutokunndayo/kinokorimeika-/issues"
+  },
+  "homepage": "https://github.com/yutokunndayo/kinokorimeika-#readme",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "form-data": "^4.0.5",
+    "sqlite3": "^5.1.7"
+  }
+}
