@@ -17,7 +17,7 @@ body {
 .container {
     width: 500px;
     height: auto; 
-    min-height: 500px; /* 高さを確保 */
+    min-height: 500px; /* 高さは確保 */
     
     background: rgba(255, 255, 255, 0.95);
     border: 6px solid #FFC1CC;

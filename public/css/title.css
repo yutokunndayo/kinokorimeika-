@@ -29,8 +29,8 @@
 
 .mascot-area {
     margin-top: -150px; /* ロゴにかぶせる */
-    width: 230px; /* 大きめサイズ */
-    height: 230px;
+    width: 200px; 
+    height: 200px;
     border-radius: 50%;
     overflow: hidden;
     border: 5px solid #FFD93D;
@@ -51,9 +51,10 @@
 
 /* ボタンの共通スタイル */
 .button {
-    width: 90%;
+     
+    width: 70%;
     max-width: 400px;
-    padding: 14px;
+    padding: 10px;
     margin-bottom: 12px;
     border-radius: 40px;
     font-size: 1.2rem;

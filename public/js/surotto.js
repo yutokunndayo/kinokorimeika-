@@ -20,20 +20,22 @@ window.addEventListener('DOMContentLoaded', () => {
     const resultText = document.getElementById('result-text');
 
     let ingredients = [];
-   /* public/js/surotto.js 33行目付近 */
 
-    // ★★★ リールの中身を「科学・実験」テーマに変更 ★★★
+    // ★★★ リールの中身（実験テーマ） ★★★
     
-    // Reel 0: 調理法 (科学的なアプローチ)
+    // Reel A: ジャンル (場所・スタイル)
+    const genres = ['錯覚フレンチ', '実験中華', '未来食', 'フェイクフード', '融合料理', '再現料理'];
+
+    // Reel B: 調理法 (科学的なアプローチ)
     const methods = ['分子調理', '低温調理', '燻製', 'キャラメリゼ', '発酵', '乳化', '抽出'];
     
-    // Reel 1: ジャンル (意外性重視)
-    const genres = ['錯覚フレンチ', '実験中華', '未来食', 'フェイクフード', '融合料理', '再現料理'];
-    
-    // Reel 2: 気分 (チャレンジ精神)
+    // Reel C: 気分 (チャレンジ精神)
     const moods = ['脳がバグる味', '見た目とのギャップ', '高級食材風', '化学反応', '未知の体験', '背徳の味'];
 
-  const reelData = [methods, genres, moods];
+    // ★修正: リールの並び順を「ジャンル・調理法・気分」に変更
+    // (以前は [methods, genres, moods] でした)
+    const reelData = [genres, methods, moods];
+    
     const SYMBOL_HEIGHT = 60;
     const REEL_REPEAT_COUNT = 10;
     let isSpinning = false;
@@ -102,11 +104,15 @@ window.addEventListener('DOMContentLoaded', () => {
 
     function onMainGameEnd() {
         isSpinning = false;
+        
+        // ★修正: リールの並び順変更に合わせて取得元を変更
         finalResults = {
-            method: reels[0].dataset.finalSymbol,
-            genre: reels[1].dataset.finalSymbol,
-            mood: reels[2].dataset.finalSymbol
+            genre: reels[0].dataset.finalSymbol,  // 左(0)がジャンル
+            method: reels[1].dataset.finalSymbol, // 中(1)が調理法
+            mood: reels[2].dataset.finalSymbol    // 右(2)が気分
         };
+        
+        // 表示順もリールと一致させる
         const resultMessage = `テーマ:【${finalResults.genre}】×【${finalResults.method}】\n気分: ${finalResults.mood}`;
         resultText.innerText = resultMessage;
         resultDisplay.classList.add('show');
