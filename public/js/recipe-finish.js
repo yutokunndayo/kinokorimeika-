@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             imageElement.src = ""; imageElement.alt = "生成中...";
             const ingredientNames = ingredientsRaw.map(i => i.split('(')[0]);
-            const imagePrompt = `(best quality, food photography:1.3), Delicious dish "${recipeName}". Ingredients: ${ingredientNames.join(', ')}. Style: ${theme.genre}. Method: ${theme.method}.`;
+            const imagePrompt = `(best quality, food photography:1.3), Delicious dish "${recipeName}". Ingredients: ${ingredientNames.join(', ')}. Style: ${theme.genre}.`;
             const response = await fetch('/api/generate-image', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -63,7 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // --- 表示処理 ---
-        // 解説文コンテナ（初期状態はJSでクラス操作するため hidden クラスはHTMLには直接書かずCSSで制御）
         let detailsHtml = `
             <div class="summary-box">
                 <p class="summary-text"><strong>${summary}</strong></p>
@@ -82,35 +81,37 @@ document.addEventListener('DOMContentLoaded', () => {
         detailsHtml += '</ul>';
         detailsElement.innerHTML = detailsHtml;
 
-        // --- ボタンのクリックイベント（高さを動的に計算） ---
+        // ボタンのクリックイベント（開閉）
         const toggleBtn = document.getElementById('toggle-detail-btn');
         const detailContent = document.getElementById('detail-content');
         
         if(toggleBtn && detailContent) {
             toggleBtn.addEventListener('click', () => {
                 const isOpen = detailContent.classList.contains('open');
-                
                 if (isOpen) {
-                    // 閉じる処理
-                    detailContent.style.maxHeight = null; // nullにするとCSSの0に戻る
+                    detailContent.style.maxHeight = null;
                     detailContent.classList.remove('open');
                     toggleBtn.textContent = '詳しい解説を見る ▼';
                     toggleBtn.classList.remove('open');
                 } else {
-                    // 開く処理
                     detailContent.classList.add('open');
-                    // コンテンツの実際の高さを取得してmax-heightに設定
                     detailContent.style.maxHeight = detailContent.scrollHeight + "px";
                     toggleBtn.textContent = '解説を閉じる ▲';
                     toggleBtn.classList.add('open');
                 }
             });
         }
-        // ------------------------
 
         // 保存ボタン
         saveButton.addEventListener('click', async () => {
-            const recipeToSave = { recipeName, description: fullDescription, steps };
+            const recipeToSave = { 
+                recipeName, 
+                description: fullDescription, 
+                steps,
+                image: imageElement.src, // 画像データ
+                ingredients: ingredientsRaw // ★材料データも追加
+            };
+            
             try {
                 const saveResponse = await fetch('/api/save-recipe', {
                     method: 'POST',
@@ -122,11 +123,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert('登録されました！');
                     saveButton.disabled = true; saveButton.textContent = '登録済み';
                 }
-            } catch (err) { alert('保存エラー'); }
+            } catch (err) { 
+                console.error(err);
+                alert('保存エラー: 画像サイズが大きすぎる可能性があります'); 
+            }
         });
         
         shareButton.addEventListener('click', () => {
-            const shareText = `余り物が大変身！「${recipeName}」\n#キノコリメイカー`;
+            const shareText = `余り物が大変身！「${recipeName}」\n#グルメメイカー`;
             window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`, '_blank');
         });
 
