@@ -2,7 +2,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const clickSound = new Audio('/sound/bow-arrow-hit.mp3');
     const spinStartSound = new Audio('/sound/ziyagura-reba.mp3');
     const stopSound = new Audio('/sound/bow-arrow-hit.mp3');
-    const gogoSound = new Audio('/sound/ziyagura-gako.mp3');
+    // gogoSound削除
     function playSound(audio) { audio.currentTime = 0; audio.play().catch(e=>{}); }
 
     const startScreen = document.getElementById('start-screen');
@@ -15,30 +15,26 @@ window.addEventListener('DOMContentLoaded', () => {
     const ingredientList = document.getElementById('ingredient-list');
     const reelStrips = document.querySelectorAll('.reel-strip');
     const reels = document.querySelectorAll('.reel');
-    const gogoLamp = document.querySelector('.gogo-lamp');
+    // gogoLamp削除
     const resultDisplay = document.getElementById('result-display');
     const resultText = document.getElementById('result-text');
 
     let ingredients = [];
 
-    // ★★★ リールの中身（実験テーマ） ★★★
-    // 「調理法」は削除し、AIにお任せする
-    
-    // Reel 0: ジャンル (場所・スタイル)
+    // Reel 0: ジャンル
     const genres = ['錯覚フレンチ', '実験中華', '未来食', 'フェイクフード', '融合料理', '再現料理'];
     
-    // Reel 1: 気分 (チャレンジ精神)
+    // Reel 1: 気分
     const moods = ['脳がバグる味', '見た目とのギャップ', '高級食材風', '化学反応', '未知の体験', '背徳の味'];
 
-    // ★修正: リールデータを2つにする
     const reelData = [genres, moods];
     
     const SYMBOL_HEIGHT = 60;
     const REEL_REPEAT_COUNT = 10;
     let isSpinning = false;
-    let stoppedReels = [false, false]; // 2つ分のフラグ
-    let animationFrameIds = [null, null]; // 2つ分
-    let reelPositions = [0, 0]; // 2つ分
+    let stoppedReels = [false, false];
+    let animationFrameIds = [null, null];
+    let reelPositions = [0, 0];
     let finalResults = {}; 
 
     function initializeApp() {
@@ -102,11 +98,9 @@ window.addEventListener('DOMContentLoaded', () => {
     function onMainGameEnd() {
         isSpinning = false;
         
-        // ★修正: 結果取得を2つ分に変更
         finalResults = {
             genre: reels[0].dataset.finalSymbol,
             mood: reels[1].dataset.finalSymbol,
-            // method は削除（サーバー側で自動決定させるか、無しで扱う）
         };
         
         const resultMessage = `テーマ:【${finalResults.genre}】\n気分: ${finalResults.mood}`;
@@ -132,11 +126,11 @@ window.addEventListener('DOMContentLoaded', () => {
         if (isSpinning) return;
         playSound(spinStartSound); 
         isSpinning = true;
-        stoppedReels = [false, false]; // 2つリセット
+        stoppedReels = [false, false];
         resultDisplay.classList.remove('show');
-        const isLampLit = Math.random() < 0.3; 
-        gogoLamp.classList.toggle('lit', isLampLit);
-        if (isLampLit) setTimeout(() => { playSound(gogoSound); }, 600);
+        
+        // GOGOランプ関連の処理を削除
+        
         startButton.disabled = true;
         stopButtons.forEach(b => b.disabled = false);
         reels.forEach((_, i) => { startReel(i); });

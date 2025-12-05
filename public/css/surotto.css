@@ -86,7 +86,6 @@ h2 {
 }
 
 .reel {
-    /* ★変更: 2つにするので幅を50%に */
     width: 50%;
     height: 100%;
     position: relative;
@@ -118,25 +117,7 @@ h2 {
     white-space: nowrap;
 }
 
-/* GOGOランプ */
-.gogo-lamp {
-    width: 40px;
-    height: 40px;
-    background: #555;
-    border-radius: 50%;
-    margin: 0 auto 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 10px;
-    color: #333;
-    border: 2px solid #222;
-}
-.gogo-lamp.lit {
-    background: #ff00ff;
-    color: white;
-    box-shadow: 0 0 10px #ff00ff;
-}
+/* GOGOランプのスタイル削除 */
 
 /* 操作ボタン */
 .controls { margin-top: 15px; }
@@ -145,11 +126,9 @@ h2 {
     display: flex;
     justify-content: space-between;
     margin-bottom: 10px;
-    /* ★変更: ボタン間の隙間を調整 */
     gap: 10px;
 }
 .stop-button {
-    /* ★変更: 2つにするので幅を広く */
     width: 48%;
     padding: 10px;
     background: #ddd;
