@@ -103,7 +103,7 @@ window.addEventListener('DOMContentLoaded', () => {
             mood: reels[1].dataset.finalSymbol,
         };
         
-        const resultMessage = `テーマ:【${finalResults.genre}】\n気分: ${finalResults.mood}`;
+        const resultMessage = `テーマ:【${finalResults.genre}】\nポイント: ${finalResults.mood}`;
         resultText.innerText = resultMessage;
         resultDisplay.classList.add('show');
         nextButton.disabled = false;
