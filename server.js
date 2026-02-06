@@ -286,4 +286,21 @@ app.post('/api/save-recipe', (req, res) => {
 
 app.listen(PORT, HOST, () => {
     console.log(`サーバー起動: http://localhost:${PORT}`);
+});// server.js に追加
+app.get('/api/my-recipes', (req, res) => {
+    const sql = `SELECT * FROM recipes ORDER BY id DESC`; // 新しい順に取得
+    db.all(sql, [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        
+        // 材料データをパースして返す
+        const recipes = rows.map(row => {
+            try { 
+                row.ingredients = row.ingredients ? JSON.parse(row.ingredients) : []; 
+            } catch (e) { 
+                row.ingredients = ["不明"]; 
+            }
+            return row;
+        });
+        res.json(recipes);
+    });
 });

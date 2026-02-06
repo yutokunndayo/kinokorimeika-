@@ -37,3 +37,4 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+document.getElementById('btn-3').addEventListener('click', () => { location.href = './collection.html'; });

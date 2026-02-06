@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>レシピ図鑑 | グルメメイカー</title>
+    <link rel="stylesheet" href="./css/common.css">
+    <style>
+        .recipe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; padding: 20px; }
+        .recipe-card { border: 1px solid #ddd; border-radius: 10px; overflow: hidden; background: white; }
+        .recipe-card img { width: 100%; height: 150px; object-fit: cover; }
+        .recipe-card h3 { padding: 10px; font-size: 1rem; margin: 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>マイレシピ図鑑</h1>
+        <div id="recipe-list" class="recipe-grid">
+            </div>
+        <button onclick="location.href='index.html'" class="button">TOPへ戻る</button>
+    </div>
+
+    <script>
+        async function loadCollection() {
+            const response = await fetch('/api/my-recipes');
+            const recipes = await response.json();
+            const listElement = document.getElementById('recipe-list');
+
+            recipes.forEach(recipe => {
+                const card = document.createElement('div');
+                card.className = 'recipe-card';
+                card.innerHTML = `
+                    <img src="${recipe.image || './img/gurumeika-3.jpg'}" alt="${recipe.recipeName}">
+                    <h3>${recipe.recipeName}</h3>
+                `;
+                // クリックで詳細ページ（既存のrecipe-finish.html等を活用、または新規作成）へ
+                card.onclick = () => { location.href = `./recipe-details.html?id=${recipe.id}`; };
+                listElement.appendChild(card);
+            });
+        }
+        loadCollection();
+    </script>
+</body>
+</html>
