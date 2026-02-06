@@ -1,95 +1,53 @@
-/* ページの基本設定（common.css優先） */
-
-/* --- タイトル画面専用のロゴ・マスコットスタイル --- */
+/* public/css/title.css */
 .title-logo {
+    /* 余白を大幅に削減 */
+    margin-bottom: 15px;
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 20px;
-    margin-bottom: 5px;
-    width: 100%;
 }
 
 .main-logo {
-    width: 120%; /* 画面からはみ出す巨大サイズ */
-    max-width: none;
-    margin-left: -10%;
-    margin-right: -10%;
-    height: auto;
-    filter: drop-shadow(0 5px 0px rgba(0,0,0,0.1));
-    animation: float 3s ease-in-out infinite;
-    position: relative;
-    z-index: 2;
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0) scale(1); }
-    50% { transform: translateY(-5px) scale(1.02); }
+    width: 80%;
+    max-width: 380px; /* 最大幅を少し小さく */
+    margin-bottom: 10px; /* 余白を詰める */
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
 }
 
 .mascot-area {
-    margin-top: -150px; /* ロゴにかぶせる */
-    width: 200px; 
-    height: 200px;
-    border-radius: 50%;
-    overflow: hidden;
-    border: 5px solid #FFD93D;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-    background: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     position: relative;
-    z-index: 1;
+    /* マスコットの表示領域を少し小さく */
+    width: 130px;
+    height: 130px;
+    margin: 5px auto 15px; /* 上下の余白を調整 */
 }
 
 .mascot-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: 50%;
+    border: 4px solid #fff; /* 枠線を少し細く */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    animation: float 3s ease-in-out infinite;
 }
 
-/* ボタンの共通スタイル */
-.button {
-     
-    width: 70%;
-    max-width: 400px;
-    padding: 10px;
-    margin-bottom: 12px;
-    border-radius: 40px;
-    font-size: 1.2rem;
-    font-weight: 700;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.2s ease;
-    border: none;
-    box-shadow: 0 4px 0 rgba(0,0,0,0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    color: #fff;
-    text-shadow: 1px 1px 0 rgba(0,0,0,0.2);
-    position: relative;
-    z-index: 3;
-    margin-top: 20px;
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); /* 浮き沈みの幅を少し小さく */ }
 }
 
-.button:active {
-    transform: translateY(3px);
-    box-shadow: none;
+/* ボタンコンテナ（もしあれば）の余白も調整 */
+.button-container {
+    width: 100%;
+    margin-top: 10px;
 }
 
-.icon { font-size: 1.4rem; }
-
-#btn-1 {
-    background: #FF9AA2; 
-    border: 3px solid #fff;
-    box-shadow: 0 0 0 2px #FF9AA2, 0 5px 0 #E57373; 
-}
-
-#btn-2 {
-    background: #FFDAC1; 
-    border: 3px solid #fff;
-    box-shadow: 0 0 0 2px #FFDAC1, 0 5px 0 #E0B090; 
-}
+/* --- ボタンの色設定はそのまま --- */
+#btn-1 { background-color: #ff9f43; color: white; box-shadow: 0 4px 0 #e67e22; }
+#btn-2 { background-color: #ff6b6b; color: white; box-shadow: 0 4px 0 #ee5253; }
+#btn-3 { background-color: #48dbfb; color: white; box-shadow: 0 4px 0 #0abde3; }
+#btn-1:active { box-shadow: 0 2px 0 #e67e22; transform: translateY(2px); }
+#btn-2:active { box-shadow: 0 2px 0 #ee5253; transform: translateY(2px); }
+#btn-3:active { box-shadow: 0 2px 0 #0abde3; transform: translateY(2px); }

@@ -8,15 +8,18 @@
     <link rel="stylesheet" href="./css/gacha.css">
     
     <style>
-        /* --- UI調整スタイル（アップになりすぎない調整） --- */
+        /* --- UI調整スタイル --- */
         
         .gacha-machine-container {
             background: #fff;
             border-radius: 20px;
-            padding: 30px 20px;
-            margin: 20px auto;
+            /* 余白を小さくして高さを抑える */
+            padding: 20px 15px;
+            margin: 15px auto;
             max-width: 500px;
-            min-height: 400px;
+            /* 高さは中身に合わせて自動調整（固定しない） */
+            height: auto;
+            
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
@@ -26,23 +29,35 @@
             position: relative;
         }
 
-        /* 待機中のキノコ */
+        /* 待機画面のエリア（余白削減） */
         .machine-illustration {
-            font-size: 5rem;
-            animation: bounce 2s infinite;
             display: block;
+            padding: 10px 0; 
         }
 
-        @keyframes bounce {
+        /* 絵文字を少し小さくして高さを節約 */
+        .emoji-icon {
+            font-size: 3.5rem; 
+            display: inline-block;
+            margin-bottom: 5px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+            50% { transform: translateY(-8px); }
         }
 
-        /* 結果表示エリア（最初は非表示） */
+        .machine-text {
+            font-size: 0.95rem;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        /* 結果表示エリア */
         .result-view {
             display: none;
             width: 100%;
-            /* forwardsを追加してアニメーション後の状態を維持 */
             animation: fadeIn 0.5s ease forwards;
         }
 
@@ -51,12 +66,12 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 画像コンテナ（サイズ制限と正方形維持） */
+        /* 画像コンテナ：サイズを抑えて縦長化を防ぐ */
         .image-container {
             width: 100%;
-            max-width: 280px; /* ここで大きさを制限 */
+            max-width: 240px; /* 画像サイズを少し縮小 */
             aspect-ratio: 1 / 1;
-            margin: 0 auto 15px;
+            margin: 0 auto 10px;
             border-radius: 15px;
             overflow: hidden;
             background: #f9f9f9;
@@ -66,39 +81,41 @@
         .gacha-image {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* 枠に合わせてトリミング */
+            object-fit: cover;
         }
 
         .recipe-name {
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             color: #ff6b6b;
-            margin-bottom: 15px;
+            margin-bottom: 8px;
             font-weight: bold;
+            line-height: 1.3;
         }
 
         .description-text {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: #666;
-            margin-bottom: 15px;
-            line-height: 1.5;
+            margin-bottom: 10px;
+            line-height: 1.4;
         }
 
-        /* 材料リスト（タグ風デザイン） */
+        /* 材料リスト */
         .ingredients-list {
             list-style: none;
             padding: 0;
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
+            margin-bottom: 0;
         }
 
         .ingredients-list li {
             background: #fff0f0;
             color: #ff6b6b;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
             border: 1px solid #ffcaca;
         }
 
@@ -106,18 +123,18 @@
         .button-group {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
             max-width: 300px;
-            margin: 0 auto;
+            margin: 10px auto 0;
         }
 
         .draw-button {
             background: #ff6b6b;
             color: white;
             border: none;
-            padding: 15px 30px;
+            padding: 12px 30px; /* ボタンも少しスリムに */
             border-radius: 30px;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 4px 0 #d64545;
@@ -140,11 +157,12 @@
             background: transparent;
             color: #888;
             border: 2px solid #ddd;
-            padding: 10px;
+            padding: 8px;
             border-radius: 30px;
             cursor: pointer;
             width: 100%;
             font-weight: bold;
+            font-size: 0.9rem;
         }
     </style>
 </head>
@@ -155,8 +173,8 @@
         
         <div class="gacha-machine-container">
             <div id="machine-view" class="machine-illustration">
-                🍄
-                <p style="font-size: 1rem; margin-top: 10px; color:#888;">何が出るかな？</p>
+                <div class="emoji-icon">🍳</div>
+                <div class="machine-text">下のボタンを押して<br>今日のレシピを占おう！</div>
             </div>
 
             <div id="result-view" class="result-view">
@@ -185,6 +203,7 @@
             const btn = document.getElementById('draw-button');
             const machineView = document.getElementById('machine-view');
             const resultView = document.getElementById('result-view');
+            const machineText = document.querySelector('.machine-text');
             
             const nameText = document.getElementById('gacha-recipe-name');
             const imgElement = document.getElementById('gacha-recipe-image');
@@ -195,9 +214,9 @@
             btn.disabled = true;
             btn.textContent = "抽選中...";
             
-            // 結果画面を隠して、キノコを表示（前の結果をクリア）
             resultView.style.display = 'none';
             machineView.style.display = 'block';
+            machineText.innerHTML = 'どれにしようかな...';
 
             try {
                 // API呼び出し
@@ -208,16 +227,15 @@
                     alert("レシピが見つかりませんでした");
                     btn.disabled = false;
                     btn.textContent = "ガチャを回す";
+                    machineText.innerHTML = '下のボタンを押して<br>今日のレシピを占おう！';
                     return;
                 }
 
                 // --- データのセット ---
                 nameText.textContent = recipe.recipeName;
-                // 画像がない場合のフォールバック
                 imgElement.src = recipe.imageUrl || './img/gurumeika-3.jpg';
                 descText.textContent = recipe.description || "美味しいレシピです！";
 
-                // 材料リスト作成
                 ingredientsList.innerHTML = "";
                 if (recipe.ingredients && Array.isArray(recipe.ingredients)) {
                     recipe.ingredients.forEach(ing => {
@@ -232,21 +250,21 @@
                 }
 
                 // --- 画面切り替え ---
-                // 800ms待ってから結果を表示
                 setTimeout(() => {
-                    machineView.style.display = 'none'; // キノコ消す
-                    resultView.style.display = 'block'; // 結果出す
+                    machineView.style.display = 'none';
+                    resultView.style.display = 'block';
                     
                     btn.disabled = false;
                     btn.textContent = "もう一度回す";
+                    machineText.innerHTML = '下のボタンを押して<br>今日のレシピを占おう！';
                 }, 800);
 
             } catch (error) {
                 console.error("Gacha Error:", error);
                 alert("通信エラーが発生しました");
-                // エラー時はボタンを元に戻す
                 btn.disabled = false;
                 btn.textContent = "ガチャを回す";
+                machineText.innerHTML = '下のボタンを押して<br>今日のレシピを占おう！';
             }
         });
     </script>

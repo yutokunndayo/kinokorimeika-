@@ -2,40 +2,117 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>レシピ図鑑 | グルメメイカー</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>レシピ図鑑 | グルメメイカー</title>
     <link rel="stylesheet" href="./css/common.css">
     <style>
-        .recipe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; padding: 20px; }
-        .recipe-card { border: 1px solid #ddd; border-radius: 10px; overflow: hidden; background: white; }
-        .recipe-card img { width: 100%; height: 150px; object-fit: cover; }
-        .recipe-card h3 { padding: 10px; font-size: 1rem; margin: 0; }
+        .page-title {
+            color: #ff6b6b;
+            margin-bottom: 20px;
+        }
+
+        /* グリッドレイアウト：画面幅に合わせて列数を自動調整 */
+        .recipe-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); /* スマホでは2列、PCでは多列 */
+            gap: 15px;
+            width: 100%;
+            padding-bottom: 30px;
+        }
+
+        .recipe-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+            cursor: pointer;
+            border: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .recipe-card:active {
+            transform: scale(0.95);
+        }
+
+        .card-image {
+            width: 100%;
+            aspect-ratio: 1/1; /* 正方形 */
+            object-fit: cover;
+        }
+
+        .card-info {
+            padding: 10px;
+            text-align: left;
+        }
+
+        .card-title {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #333;
+            margin: 0 0 5px 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* 2行で省略 */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-date {
+            font-size: 0.7rem;
+            color: #aaa;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>マイレシピ図鑑</h1>
+        <h2 class="page-title">マイレシピ図鑑</h2>
+        
         <div id="recipe-list" class="recipe-grid">
-            </div>
-        <button onclick="location.href='index.html'" class="button">TOPへ戻る</button>
+            <p style="grid-column: 1/-1; color:#999;">レシピを読み込んでいます...</p>
+        </div>
+
+        <button onclick="location.href='index.html'" class="button" style="background:#ddd; color:#555; margin-top:20px;">
+            TOPへ戻る
+        </button>
     </div>
 
     <script>
         async function loadCollection() {
-            const response = await fetch('/api/my-recipes');
-            const recipes = await response.json();
-            const listElement = document.getElementById('recipe-list');
+            try {
+                const response = await fetch('/api/my-recipes');
+                const recipes = await response.json();
+                const listElement = document.getElementById('recipe-list');
+                listElement.innerHTML = ''; // クリア
 
-            recipes.forEach(recipe => {
-                const card = document.createElement('div');
-                card.className = 'recipe-card';
-                card.innerHTML = `
-                    <img src="${recipe.image || './img/gurumeika-3.jpg'}" alt="${recipe.recipeName}">
-                    <h3>${recipe.recipeName}</h3>
-                `;
-                // クリックで詳細ページ（既存のrecipe-finish.html等を活用、または新規作成）へ
-                card.onclick = () => { location.href = `./recipe-details.html?id=${recipe.id}`; };
-                listElement.appendChild(card);
-            });
+                if (recipes.length === 0) {
+                    listElement.innerHTML = '<p style="grid-column: 1/-1; padding:20px;">まだレシピがありません。<br>いろいろ作ってみよう！</p>';
+                    return;
+                }
+
+                recipes.forEach(recipe => {
+                    const card = document.createElement('div');
+                    card.className = 'recipe-card';
+                    // 画像がない場合のデフォルト画像
+                    const imgUrl = recipe.image || './img/gurumeika-3.jpg';
+                    
+                    card.innerHTML = `
+                        <img src="${imgUrl}" alt="${recipe.recipeName}" class="card-image" loading="lazy">
+                        <div class="card-info">
+                            <h3 class="card-title">${recipe.recipeName}</h3>
+                        </div>
+                    `;
+                    // クリックで詳細へ（IDをクエリで渡すなどの実装が必要ですが、今はアラートで確認）
+                    card.onclick = () => { 
+                        // 詳細ページへ飛ぶなら: location.href = `recipe-finish.html?id=${recipe.id}`; 
+                        // ※recipe-finish.js側でURLパラメータを受け取る改造が必要になります
+                        alert(`「${recipe.recipeName}」\n${recipe.description || ''}`); 
+                    };
+                    listElement.appendChild(card);
+                });
+            } catch (e) {
+                console.error(e);
+                document.getElementById('recipe-list').innerHTML = '<p>読み込みエラー</p>';
+            }
         }
         loadCollection();
     </script>

@@ -1,34 +1,96 @@
-/* 全体の共通スタイル */
-@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap');
-
-body {
-    background: url('../img/Gemini_Generated_Image_bsqnujbsqnujbsqn.jpg') no-repeat center center fixed;
-    background-size: cover;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    margin: 0;
-    font-family: "M PLUS Rounded 1c", "Helvetica Neue", Arial, sans-serif;
-    color: #5d4037;
-    padding: 10px 0;
+/* public/css/common.css */
+* {
+    box-sizing: border-box;
 }
 
-.container {
-    width: 500px;
-    height: auto; 
-    min-height: 500px; /* 高さは確保 */
+body {
+    font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
     
-    background: rgba(255, 255, 255, 0.95);
-    border: 6px solid #FFC1CC;
-    border-radius: 30px;
-    padding: 20px;
-    box-sizing: border-box;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    /* ▼▼▼ 背景画像の設定ここから ▼▼▼ */
+    
+    /* 1. 画像を指定する（ファイル名を実際に合わせて書き換えてください） */
+    background-image: url('../img/haikei.jpg');
+    
+    /* 2. 画面いっぱいに広げる */
+    background-size: cover;
+    
+    /* 3. 画像を常に中央に配置する */
+    background-position: center;
+    
+    /* 4. スクロールしても背景を固定する（動かさない） */
+    background-attachment: fixed;
+    
+    /* 5. 画像を繰り返さない */
+    background-repeat: no-repeat;
+    
+    /* ▲▲▲ 背景画像の設定ここまで ▲▲▲ */
+
+    margin: 0;
+    padding: 0;
+    color: #333;
+    line-height: 1.6;
+    -webkit-text-size-adjust: 100%;
+}
+
+/* ▼▼▼ 修正箇所 ▼▼▼ */
+.container {
+    width: 90%;
+    max-width: 600px;
+    margin: 20px auto; /* 上下の余白を少し確保 */
+    padding: 25px 20px; /* 内側の余白を調整 */
+    text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
-    position: relative;
+    
+    /* 半透明の白い背景を追加して文字を読みやすくする */
+    background-color: rgba(255, 255, 255, 0.85); /* 85%の不透明度 */
+    border-radius: 20px; /* 角を丸く */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* ほんのり影をつけて浮かせる */
+    backdrop-filter: blur(5px); /* すりガラス効果（対応ブラウザ用） */
+}
+/* ▲▲▲ 修正箇所ここまで ▲▲▲ */
+
+img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
 }
 
-button { font-family: inherit; }
+/* 共通ボタンスタイル */
+.button, button {
+    font-size: 1.1rem;
+    font-weight: bold;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s;
+    width: 100%;
+    max-width: 350px;
+    margin: 8px auto; /* ボタン間の余白を少し詰める */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 50px; /* 高さを少しだけコンパクトに */
+    touch-action: manipulation;
+}
+
+.button:active, button:active {
+    transform: scale(0.98);
+}
+
+.icon {
+    font-size: 1.4rem;
+}
+
+input, select, textarea {
+    font-size: 16px; 
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 15px;
+}
