@@ -4,8 +4,149 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>レシピガチャ | キノコリメイカー</title>
-    <link rel="stylesheet" href="./css/gacha.css">
     <link rel="stylesheet" href="./css/common.css">
+    <link rel="stylesheet" href="./css/gacha.css">
+    
+    <style>
+        /* --- 追加のUI調整スタイル --- */
+        
+        /* ガチャマシンのエリア（結果表示エリア兼用） */
+        .gacha-machine-container {
+            background: #fff;
+            border-radius: 20px;
+            padding: 30px 20px;
+            margin: 20px auto;
+            max-width: 500px;
+            min-height: 400px; /* 高さを確保 */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        /* 待機中のキノコ */
+        .machine-illustration {
+            font-size: 5rem;
+            animation: bounce 2s infinite;
+            display: block; /* 初期表示 */
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* 結果表示エリア（最初は非表示） */
+        .result-view {
+            display: none; /* 初期は非表示 */
+            width: 100%;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 画像コンテナ（サイズ制限） */
+        .image-container {
+            width: 100%;
+            max-width: 280px; /* 画像が大きくなりすぎないように制限 */
+            aspect-ratio: 1 / 1; /* 正方形を維持 */
+            margin: 0 auto 15px;
+            border-radius: 15px;
+            overflow: hidden;
+            background: #f9f9f9;
+            border: 3px solid #ffe3e3;
+        }
+
+        .gacha-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* テキスト周り */
+        .recipe-name {
+            font-size: 1.4rem;
+            color: #ff6b6b;
+            margin-bottom: 15px;
+        }
+
+        .description-text {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        /* 材料リスト */
+        .ingredients-list {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .ingredients-list li {
+            background: #fff0f0;
+            color: #ff6b6b;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            border: 1px solid #ffcaca;
+        }
+
+        /* ボタン周り */
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .draw-button {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #d64545;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .draw-button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #d64545;
+        }
+        
+        .draw-button:disabled {
+            background: #ccc;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .back-button {
+            background: transparent;
+            color: #888;
+            border: 2px solid #ddd;
+            padding: 10px;
+            border-radius: 30px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -13,13 +154,100 @@
         <p class="description">みんなが作ったリメイクレシピが<br>ランダムで出てくるよ！</p>
         
         <div class="gacha-machine-container">
-            <!-- キノコ型ガチャマシンのイメージ -->
-            <div class="machine-illustration">🍄</div>
+            <div id="machine-view" class="machine-illustration">
+                🍄
+                <p style="font-size: 1rem; margin-top: 10px; color:#888;">何が出るかな？</p>
+            </div>
+
+            <div id="result-view" class="result-view">
+                <h2 id="gacha-recipe-name" class="recipe-name">料理名</h2>
+                
+                <div class="image-container">
+                    <img id="gacha-recipe-image" src="" alt="料理画像" class="gacha-image">
+                </div>
+
+                <div class="gacha-details">
+                    <p id="gacha-description" class="description-text">解説テキスト</p>
+                    <ul id="gacha-ingredients" class="ingredients-list">
+                        </ul>
+                </div>
+            </div>
         </div>
         
-        <button id="draw-button" class="draw-button">ガチャを回す</button>
-        <button onclick="location.href='/'" class="back-button">戻る</button>
+        <div class="button-group">
+            <button id="draw-button" class="draw-button">ガチャを回す</button>
+            <button onclick="location.href='./index.html'" class="back-button">TOPへ戻る</button>
+        </div>
     </div>
+
     <script src="./js/gacha.js"></script>
+    <script>
+        document.getElementById('draw-button').addEventListener('click', async () => {
+            const btn = document.getElementById('draw-button');
+            const machineView = document.getElementById('machine-view');
+            const resultView = document.getElementById('result-view');
+            
+            const nameText = document.getElementById('gacha-recipe-name');
+            const imgElement = document.getElementById('gacha-recipe-image');
+            const descText = document.getElementById('gacha-description');
+            const ingredientsList = document.getElementById('gacha-ingredients');
+
+            // --- 演出開始 ---
+            btn.disabled = true;
+            btn.textContent = "抽選中...";
+            
+            // 結果画面を隠して、キノコを表示（再抽選のとき用）
+            resultView.style.display = 'none';
+            machineView.style.display = 'block';
+
+            try {
+                // API呼び出し
+                const response = await fetch('/api/gacha');
+                const recipe = await response.json();
+
+                if (!recipe) {
+                    alert("レシピが見つかりませんでした");
+                    btn.disabled = false;
+                    btn.textContent = "ガチャを回す";
+                    return;
+                }
+
+                // --- データのセット ---
+                nameText.textContent = recipe.recipeName;
+                imgElement.src = recipe.imageUrl || './img/gurumeika-3.jpg';
+                descText.textContent = recipe.description || "美味しいレシピです！";
+
+                // 材料リスト作成
+                ingredientsList.innerHTML = "";
+                if (recipe.ingredients && Array.isArray(recipe.ingredients)) {
+                    recipe.ingredients.forEach(ing => {
+                        const li = document.createElement('li');
+                        li.textContent = ing;
+                        ingredientsList.appendChild(li);
+                    });
+                } else {
+                    const li = document.createElement('li');
+                    li.textContent = "材料データなし";
+                    ingredientsList.appendChild(li);
+                }
+
+                // --- 画面切り替え ---
+                // 少しだけ待ってから表示（演出用）
+                setTimeout(() => {
+                    machineView.style.display = 'none'; // キノコ消す
+                    resultView.style.display = 'block'; // 結果出す
+                    
+                    btn.disabled = false;
+                    btn.textContent = "もう一度回す";
+                }, 800);
+
+            } catch (error) {
+                console.error("Gacha Error:", error);
+                alert("エラーが発生しました");
+                btn.disabled = false;
+                btn.textContent = "ガチャを回す";
+            }
+        });
+    </script>
 </body>
 </html>

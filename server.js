@@ -188,13 +188,23 @@ async function callGeminiExtractIngredients(recipeName, description) {
 
 // --- APIエンドポイント ---
 
-app.get('/api/recipes/:id', (req, res) => {
-    const sql = `SELECT * FROM recipes WHERE id = ?`;
-    db.get(sql, [req.params.id], (err, row) => {
-        if (err) return res.status(500).json({ error: err.message });
-        if (!row) return res.status(404).json({ error: 'Recipe not found' });
-        try { if (row.ingredients) row.ingredients = JSON.parse(row.ingredients); } catch (e) { row.ingredients = ["不明"]; }
-        res.json(row);
+// server.js の該当箇所を確認
+app.get('/api/gacha', (req, res) => {
+    const sql = `SELECT * FROM recipes ORDER BY RANDOM() LIMIT 1;`;
+    db.get(sql, [], async (err, row) => {
+        // ...中略...
+        if (!imageUrl) {
+            console.log(`ガチャ: 画像生成...`);
+            try {
+                // 画像がない場合はここで生成される
+                imageUrl = await callStabilityImageAPI(`(best quality, food photography:1.3), Delicious dish "${row.recipeName}". Style: Experimental cuisine.`);
+                needsUpdate = true;
+            } catch (e) {
+                imageUrl = '/img/gurumeika-3.jpg'; // 失敗時のデフォルト
+            }
+        }
+        // ...DB更新処理など...
+        res.json({ ...row, ingredients, imageUrl }); // ここで imageUrl を返している
     });
 });
 

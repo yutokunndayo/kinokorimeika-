@@ -45,4 +45,34 @@ function resetButton() {
     machine.classList.remove('shake');
     drawButton.disabled = false;
     drawButton.textContent = 'ガチャを回す';
+}// public/js/gacha.js (もしファイルがない場合は新規作成または追記)
+
+async function spinGacha() {
+    try {
+        const response = await fetch('/api/gacha');
+        const recipe = await response.json();
+
+        if (!recipe) {
+            alert("レシピがまだ登録されていません！");
+            return;
+        }
+
+        // --- 画像の表示処理 ---
+        const recipeImageElement = document.getElementById('gacha-recipe-image');
+        if (recipeImageElement) {
+            // サーバーから返ってきた imageUrl (Base64データまたはパス) をセット
+            recipeImageElement.src = recipe.imageUrl || '/img/gurumeika-3.jpg';
+            recipeImageElement.alt = recipe.recipeName;
+        }
+
+        // --- 名前の表示処理 ---
+        const recipeNameElement = document.getElementById('gacha-recipe-name');
+        if (recipeNameElement) {
+            recipeNameElement.textContent = recipe.recipeName;
+        }
+
+        // その他、材料や説明の表示...
+    } catch (error) {
+        console.error("ガチャエラー:", error);
+    }
 }
