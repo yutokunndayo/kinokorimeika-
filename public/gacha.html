@@ -8,16 +8,15 @@
     <link rel="stylesheet" href="./css/gacha.css">
     
     <style>
-        /* --- 追加のUI調整スタイル --- */
+        /* --- UI調整スタイル（アップになりすぎない調整） --- */
         
-        /* ガチャマシンのエリア（結果表示エリア兼用） */
         .gacha-machine-container {
             background: #fff;
             border-radius: 20px;
             padding: 30px 20px;
             margin: 20px auto;
             max-width: 500px;
-            min-height: 400px; /* 高さを確保 */
+            min-height: 400px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
@@ -31,7 +30,7 @@
         .machine-illustration {
             font-size: 5rem;
             animation: bounce 2s infinite;
-            display: block; /* 初期表示 */
+            display: block;
         }
 
         @keyframes bounce {
@@ -41,9 +40,10 @@
 
         /* 結果表示エリア（最初は非表示） */
         .result-view {
-            display: none; /* 初期は非表示 */
+            display: none;
             width: 100%;
-            animation: fadeIn 0.5s ease;
+            /* forwardsを追加してアニメーション後の状態を維持 */
+            animation: fadeIn 0.5s ease forwards;
         }
 
         @keyframes fadeIn {
@@ -51,11 +51,11 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 画像コンテナ（サイズ制限） */
+        /* 画像コンテナ（サイズ制限と正方形維持） */
         .image-container {
             width: 100%;
-            max-width: 280px; /* 画像が大きくなりすぎないように制限 */
-            aspect-ratio: 1 / 1; /* 正方形を維持 */
+            max-width: 280px; /* ここで大きさを制限 */
+            aspect-ratio: 1 / 1;
             margin: 0 auto 15px;
             border-radius: 15px;
             overflow: hidden;
@@ -66,14 +66,14 @@
         .gacha-image {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: cover; /* 枠に合わせてトリミング */
         }
 
-        /* テキスト周り */
         .recipe-name {
             font-size: 1.4rem;
             color: #ff6b6b;
             margin-bottom: 15px;
+            font-weight: bold;
         }
 
         .description-text {
@@ -83,7 +83,7 @@
             line-height: 1.5;
         }
 
-        /* 材料リスト */
+        /* 材料リスト（タグ風デザイン） */
         .ingredients-list {
             list-style: none;
             padding: 0;
@@ -175,12 +175,11 @@
         </div>
         
         <div class="button-group">
-            <button id="draw-button" class="draw-button">ガチャを回す</button>
-            <button onclick="location.href='./index.html'" class="back-button">TOPへ戻る</button>
+            <button id="draw-button" type="button" class="draw-button">ガチャを回す</button>
+            <button type="button" onclick="location.href='./index.html'" class="back-button">TOPへ戻る</button>
         </div>
     </div>
 
-    <script src="./js/gacha.js"></script>
     <script>
         document.getElementById('draw-button').addEventListener('click', async () => {
             const btn = document.getElementById('draw-button');
@@ -196,7 +195,7 @@
             btn.disabled = true;
             btn.textContent = "抽選中...";
             
-            // 結果画面を隠して、キノコを表示（再抽選のとき用）
+            // 結果画面を隠して、キノコを表示（前の結果をクリア）
             resultView.style.display = 'none';
             machineView.style.display = 'block';
 
@@ -214,6 +213,7 @@
 
                 // --- データのセット ---
                 nameText.textContent = recipe.recipeName;
+                // 画像がない場合のフォールバック
                 imgElement.src = recipe.imageUrl || './img/gurumeika-3.jpg';
                 descText.textContent = recipe.description || "美味しいレシピです！";
 
@@ -232,7 +232,7 @@
                 }
 
                 // --- 画面切り替え ---
-                // 少しだけ待ってから表示（演出用）
+                // 800ms待ってから結果を表示
                 setTimeout(() => {
                     machineView.style.display = 'none'; // キノコ消す
                     resultView.style.display = 'block'; // 結果出す
@@ -243,7 +243,8 @@
 
             } catch (error) {
                 console.error("Gacha Error:", error);
-                alert("エラーが発生しました");
+                alert("通信エラーが発生しました");
+                // エラー時はボタンを元に戻す
                 btn.disabled = false;
                 btn.textContent = "ガチャを回す";
             }
