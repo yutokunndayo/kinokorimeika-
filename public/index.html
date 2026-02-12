@@ -3,32 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>グルメメイカー</title>
-    <link rel="stylesheet" href="./css/title.css">
-    <link rel="stylesheet" href="./css/common.css">
+    <title>グルメメイカー - TOP</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/title.css">
 </head>
 <body>
     <div class="container">
-        <div class="title-logo">
-            <img src="./img/gurumeika-.png" alt="グルメメイカー" class="main-logo">
-            
-            <div class="mascot-area">
-                <img src="./img/gurumeika-3.jpg" alt="タコのシェフ" class="mascot-img">
-            </div>
+        <div id="user-status" style="position: absolute; top: 10px; right: 10px; z-index: 100;">
+            <a href="login.html" class="btn-mini">ログイン</a>
         </div>
-        
-        <p style="text-align: center; color: #ff8ba7; margin-bottom: 30px; font-weight:bold; font-size: 1rem; background:#fff; padding:5px 10px; border-radius:10px;">
-            冷蔵庫の余り物が<br>魔法のレシピに大変身！
-        </p>
 
-        <button id="btn-1" class="button">
-            <span class="icon">🍳</span> 余り物をリメイク
-        </button>
-        <button id="btn-2" class="button">
-            <span class="icon">🎁</span> レシピガチャ
-        </button>
-        <button id="btn-3" class="button"><span class="icon">📖</span> レシピ図鑑</button>
+        <img src="img/gurumeika-.png" alt="グルメメイカー" class="title-logo">
+        
+        <div class="menu-buttons">
+            <a href="surotto.html" class="menu-btn">
+                <span class="icon">🍳</span>
+                <span class="text">レシピを作る</span>
+            </a>
+            <a href="gacha.html" class="menu-btn">
+                <span class="icon">🎰</span>
+                <span class="text">レシピガチャ</span>
+            </a>
+            <a href="collection.html" class="menu-btn" id="collection-link">
+                <span class="icon">📖</span>
+                <span class="text">レシピ図鑑</span>
+            </a>
+        </div>
     </div>
-    <script src="./js/title.js"></script>
+
+    <script>
+        // ログイン状態チェック
+        fetch('/api/user')
+            .then(res => res.json())
+            .then(data => {
+                const statusDiv = document.getElementById('user-status');
+                const collectionLink = document.getElementById('collection-link');
+                
+                if (data.loggedIn) {
+                    statusDiv.innerHTML = `
+                        <span style="background:white; padding:5px 10px; border-radius:15px; font-weight:bold;">
+                            ${data.username}さん
+                        </span>
+                        <button onclick="logout()" style="margin-left:5px; cursor:pointer;">ログアウト</button>
+                    `;
+                } else {
+                    // ログインしていない場合、図鑑ボタンを押すとアラート
+                    collectionLink.href = "javascript:void(0)";
+                    collectionLink.addEventListener('click', () => {
+                        if(confirm('図鑑を見るにはログインが必要です。ログイン画面へ移動しますか？')) {
+                            window.location.href = 'login.html';
+                        }
+                    });
+                }
+            });
+
+        function logout() {
+            fetch('/api/logout', { method: 'POST' })
+                .then(() => window.location.reload());
+        }
+    </script>
+    <script src="js/title.js"></script>
 </body>
 </html>

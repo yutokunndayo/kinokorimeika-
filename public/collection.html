@@ -2,119 +2,89 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>レシピ図鑑 | グルメメイカー</title>
-    <link rel="stylesheet" href="./css/common.css">
+    <title>レシピ図鑑 - グルメメイカー</title>
+    <link rel="stylesheet" href="css/common.css">
     <style>
-        .page-title {
-            color: #ff6b6b;
-            margin-bottom: 20px;
-        }
-
-        /* グリッドレイアウト：画面幅に合わせて列数を自動調整 */
-        .recipe-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); /* スマホでは2列、PCでは多列 */
-            gap: 15px;
-            width: 100%;
-            padding-bottom: 30px;
-        }
-
+        .collection-container { padding: 20px; max-width: 800px; margin: 0 auto; }
         .recipe-card {
             background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            transition: transform 0.2s;
-            cursor: pointer;
-            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
+            gap: 10px;
         }
-
-        .recipe-card:active {
-            transform: scale(0.95);
-        }
-
-        .card-image {
-            width: 100%;
-            aspect-ratio: 1/1; /* 正方形 */
-            object-fit: cover;
-        }
-
-        .card-info {
-            padding: 10px;
-            text-align: left;
-        }
-
-        .card-title {
-            font-size: 0.9rem;
-            font-weight: bold;
-            color: #333;
-            margin: 0 0 5px 0;
-            display: -webkit-box;
-            -webkit-line-clamp: 2; /* 2行で省略 */
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .card-date {
-            font-size: 0.7rem;
-            color: #aaa;
-        }
+        .recipe-card img { width: 100%; height: 200px; object-fit: cover; border-radius: 8px; }
+        .recipe-info h3 { color: #ff6b6b; margin: 0 0 5px 0; }
+        .summary { font-weight: bold; color: #555; }
+        .detail { font-size: 0.9rem; color: #666; margin-top: 5px; white-space: pre-wrap; }
+        .steps-box { background: #f9f9f9; padding: 10px; border-radius: 5px; margin-top: 10px; }
+        .back-btn { display: block; width: 100%; text-align: center; padding: 10px; background: #ddd; text-decoration: none; color: #333; border-radius: 5px; margin-top: 20px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2 class="page-title">マイレシピ図鑑</h2>
-        
-        <div id="recipe-list" class="recipe-grid">
-            <p style="grid-column: 1/-1; color:#999;">レシピを読み込んでいます...</p>
+    <div class="collection-container">
+        <h2 style="text-align: center; color: white; text-shadow: 1px 1px 2px black;">マイレシピ図鑑</h2>
+        <div id="recipe-list">
+            <p style="text-align:center; color:white;">読み込み中...</p>
         </div>
-
-        <button onclick="location.href='index.html'" class="button" style="background:#ddd; color:#555; margin-top:20px;">
-            TOPへ戻る
-        </button>
+        <a href="index.html" class="back-btn">TOPへ戻る</a>
     </div>
 
     <script>
-        async function loadCollection() {
+        document.addEventListener('DOMContentLoaded', async () => {
+            const list = document.getElementById('recipe-list');
             try {
-                const response = await fetch('/api/my-recipes');
-                const recipes = await response.json();
-                const listElement = document.getElementById('recipe-list');
-                listElement.innerHTML = ''; // クリア
-
+                const res = await fetch('/api/my-recipes');
+                if (res.status === 401) {
+                    alert('ログインしてください');
+                    window.location.href = 'login.html';
+                    return;
+                }
+                const recipes = await res.json();
+                
                 if (recipes.length === 0) {
-                    listElement.innerHTML = '<p style="grid-column: 1/-1; padding:20px;">まだレシピがありません。<br>いろいろ作ってみよう！</p>';
+                    list.innerHTML = '<p style="text-align:center; color:white;">まだレシピがありません。</p>';
                     return;
                 }
 
+                list.innerHTML = '';
                 recipes.forEach(recipe => {
-                    const card = document.createElement('div');
-                    card.className = 'recipe-card';
-                    // 画像がない場合のデフォルト画像
-                    const imgUrl = recipe.image || './img/gurumeika-3.jpg';
-                    
-                    card.innerHTML = `
-                        <img src="${imgUrl}" alt="${recipe.recipeName}" class="card-image" loading="lazy">
-                        <div class="card-info">
-                            <h3 class="card-title">${recipe.recipeName}</h3>
+                    // 全ての生成テキストを表示
+                    const stepsList = Array.isArray(recipe.steps) 
+                        ? recipe.steps.map(s => `<li>${s}</li>`).join('') 
+                        : `<li>${recipe.steps}</li>`;
+                        
+                    const html = `
+                        <div class="recipe-card">
+                            <img src="${recipe.image || '/img/gurumeika-3.jpg'}" alt="${recipe.recipeName}">
+                            <div class="recipe-info">
+                                <h3>${recipe.recipeName}</h3>
+                                <p class="summary">"${recipe.summary || 'キャッチコピーなし'}"</p>
+                                <details>
+                                    <summary>詳細解説を見る</summary>
+                                    <p class="detail">${recipe.detail || recipe.description}</p>
+                                </details>
+                                <details>
+                                    <summary>作り方・材料</summary>
+                                    <div class="steps-box">
+                                        <strong>材料:</strong> ${recipe.ingredients.join(', ')}<br><br>
+                                        <strong>手順:</strong>
+                                        <ul style="padding-left: 20px; margin: 5px 0;">${stepsList}</ul>
+                                    </div>
+                                </details>
+                            </div>
                         </div>
                     `;
-                    // クリックで詳細へ（IDをクエリで渡すなどの実装が必要ですが、今はアラートで確認）
-                    card.onclick = () => { 
-                        // 詳細ページへ飛ぶなら: location.href = `recipe-finish.html?id=${recipe.id}`; 
-                        // ※recipe-finish.js側でURLパラメータを受け取る改造が必要になります
-                        alert(`「${recipe.recipeName}」\n${recipe.description || ''}`); 
-                    };
-                    listElement.appendChild(card);
+                    list.innerHTML += html;
                 });
             } catch (e) {
                 console.error(e);
-                document.getElementById('recipe-list').innerHTML = '<p>読み込みエラー</p>';
+                list.innerHTML = '<p>読み込みエラー</p>';
             }
-        }
-        loadCollection();
+        });
     </script>
 </body>
 </html>

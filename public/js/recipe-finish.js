@@ -14,9 +14,10 @@ document.addEventListener('DOMContentLoaded', () => {
             titleElement.textContent = "レシピ情報がありません"; return;
         }
         
+        // データを格納する変数
         let recipeName, summary, detail, fullDescription, steps;
 
-        // レシピ生成API
+        // --- レシピ生成 ---
         try {
             titleElement.textContent = "美味しいレシピを考案中...";
             const recipeResponse = await fetch('/api/generate-recipe', {
@@ -28,23 +29,23 @@ document.addEventListener('DOMContentLoaded', () => {
             const recipeApiData = await recipeResponse.json();
             
             recipeName = recipeApiData.recipeName;
-            summary = recipeApiData.summary || "要約なし";
-            detail = recipeApiData.detail || recipeApiData.description;
-            fullDescription = recipeApiData.description || (summary + "\n" + detail);
+            summary = recipeApiData.summary; // キャッチコピー
+            detail = recipeApiData.detail;   // 詳細解説
+            fullDescription = recipeApiData.description; // 結合テキスト
             steps = recipeApiData.steps; 
             
             titleElement.textContent = recipeName;
         } catch (error) {
             console.error(error);
-            titleElement.textContent = "まかない飯（生成エラー）";
+            titleElement.textContent = "生成エラー";
             recipeName = "名無しのまかない飯";
-            summary = "エラーが発生しました。";
-            detail = "とりあえず炒めればOK！";
+            summary = "生成失敗";
+            detail = "エラーが発生しました。";
             fullDescription = summary + detail;
-            steps = ["適当に切る", "火を通す", "味を整える"];
+            steps = ["適当に切る", "火を通す"];
         }
 
-        // 画像生成API
+        // --- 画像生成 ---
         try {
             imageElement.src = ""; imageElement.alt = "生成中...";
             const ingredientNames = ingredientsRaw.map(i => i.split('(')[0]);
@@ -54,62 +55,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ prompt: imagePrompt }),
             });
-            if (!response.ok) throw new Error(`画像APIエラー`);
             const data = await response.json();
             if (data.imageUrl) imageElement.src = data.imageUrl;
         } catch (error) {
-            console.error(error);
-            imageElement.src = '/img/1402858_s.jpg';
+            imageElement.src = '/img/gurumeika-3.jpg';
         }
 
         // --- 表示処理 ---
         let detailsHtml = `
             <div class="summary-box">
-                <p class="summary-text"><strong>${summary}</strong></p>
+                <p class="summary-text"><strong>${summary || ''}</strong></p>
             </div>
-            
             <div class="detail-container">
-                <button id="toggle-detail-btn" class="toggle-btn">詳しい解説を見る ▼</button>
-                <div id="detail-content" class="detail-content">
-                    <p class="detail-text">${detail}</p>
-                </div>
+                <p class="detail-text">${detail || ''}</p>
             </div>
         `;
 
         detailsHtml += '<h4>作り方</h4><ul>';
-        steps.forEach((step, index) => { detailsHtml += `<li><span style="color:#ff6b6b; font-weight:bold;">${index + 1}.</span> ${step}</li>`; });
+        if(steps && Array.isArray(steps)){
+            steps.forEach((step, index) => { detailsHtml += `<li><span style="color:#ff6b6b; font-weight:bold;">${index + 1}.</span> ${step}</li>`; });
+        }
         detailsHtml += '</ul>';
         detailsElement.innerHTML = detailsHtml;
 
-        // ボタンのクリックイベント（開閉）
-        const toggleBtn = document.getElementById('toggle-detail-btn');
-        const detailContent = document.getElementById('detail-content');
-        
-        if(toggleBtn && detailContent) {
-            toggleBtn.addEventListener('click', () => {
-                const isOpen = detailContent.classList.contains('open');
-                if (isOpen) {
-                    detailContent.style.maxHeight = null;
-                    detailContent.classList.remove('open');
-                    toggleBtn.textContent = '詳しい解説を見る ▼';
-                    toggleBtn.classList.remove('open');
-                } else {
-                    detailContent.classList.add('open');
-                    detailContent.style.maxHeight = detailContent.scrollHeight + "px";
-                    toggleBtn.textContent = '解説を閉じる ▲';
-                    toggleBtn.classList.add('open');
-                }
-            });
-        }
-
-        // 保存ボタン
+        // --- 保存処理 (修正版) ---
         saveButton.addEventListener('click', async () => {
             const recipeToSave = { 
                 recipeName, 
+                summary,    // ★追加
+                detail,     // ★追加
                 description: fullDescription, 
                 steps,
-                image: imageElement.src, // 画像データ
-                ingredients: ingredientsRaw // ★材料データも追加
+                image: imageElement.src,
+                ingredients: ingredientsRaw
             };
             
             try {
@@ -118,9 +96,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(recipeToSave),
                 });
+
+                if (saveResponse.status === 401) {
+                    alert('保存するにはログインが必要です！');
+                    if(confirm('ログイン画面へ移動しますか？')) {
+                         // 現在のデータを保持したい場合、localStorage等に一時保存する工夫が必要ですが今回は省略
+                         window.open('login.html', '_blank'); 
+                    }
+                    return;
+                }
+
                 const result = await saveResponse.json();
                 if (result.success) {
-                    alert('登録されました！');
+                    alert('図鑑に登録されました！');
                     saveButton.disabled = true; saveButton.textContent = '登録済み';
                 }
             } catch (err) { 
@@ -129,24 +117,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         
+        // シェアボタン
         shareButton.addEventListener('click', () => {
-            const shareText = `余り物が大変身！「${recipeName}」\n#グルメメイカー`;
+            const shareText = `「${recipeName}」\n${summary}\n#グルメメイカー`;
             window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`, '_blank');
         });
 
         returnButton.addEventListener('click', () => { window.location.href = './index.html'; });
-
-        // 星評価
-        const stars = document.querySelectorAll('#rating-stars .star');
-        let currentRating = 1;
-        function setRating(rating) { stars.forEach(star => star.classList.toggle('selected', parseInt(star.dataset.value) <= rating)); }
-        function setHover(rating) { stars.forEach(star => star.classList.toggle('hover', parseInt(star.dataset.value) <= rating)); }
-        stars.forEach(star => {
-            star.addEventListener('mouseover', () => setHover(parseInt(star.dataset.value)));
-            star.addEventListener('click', () => { currentRating = parseInt(star.dataset.value); setRating(currentRating); });
-        });
-        document.getElementById('rating-stars').addEventListener('mouseout', () => setHover(currentRating));
-        setRating(currentRating);
     }
     generateAndDisplayRecipe();
 });

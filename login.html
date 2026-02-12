@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ログイン - グルメメイカー</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/material-input.css">
+    <style>
+        .login-container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .form-group { margin-bottom: 1.5rem; text-align: left; }
+        .btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-login { background-color: #ff6b6b; color: white; }
+        .btn-register { background-color: #4ecdc4; color: white; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2 style="color: #ff6b6b;">ログイン / 新規登録</h2>
+        <p>レシピ図鑑を作るにはログインしてください</p>
+        
+        <form id="auth-form">
+            <div class="form-group">
+                <label>ユーザー名</label>
+                <input type="text" id="username" class="material-input" required>
+            </div>
+            <div class="form-group">
+                <label>パスワード</label>
+                <input type="password" id="password" class="material-input" required>
+            </div>
+            <div class="btn-group">
+                <button type="submit" id="login-btn" class="btn btn-login">ログイン</button>
+                <button type="button" id="register-btn" class="btn btn-register">新規登録</button>
+            </div>
+        </form>
+        <p><a href="index.html">ホームに戻る</a></p>
+    </div>
+    <script src="js/login.js"></script>
+</body>
+</html>

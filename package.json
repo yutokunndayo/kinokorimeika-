@@ -20,8 +20,10 @@
   },
   "homepage": "https://github.com/yutokunndayo/kinokorimeika-#readme",
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
+    "express-session": "^1.19.0",
     "form-data": "^4.0.5",
     "sqlite3": "^5.1.7"
   }
