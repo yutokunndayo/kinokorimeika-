@@ -2,18 +2,15 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>レシピ図鑑 | グルメメイカー</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>レシピ図鑑 | グルメメイカー</title>
     <link rel="stylesheet" href="./css/common.css">
     <style>
-        .page-title {
-            color: #ff6b6b;
-            margin-bottom: 20px;
-        }
+        .page-title { color: #ff6b6b; margin-bottom: 20px; }
 
-        /* グリッドレイアウト：画面幅に合わせて列数を自動調整 */
         .recipe-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); /* スマホでは2列、PCでは多列 */
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
             gap: 15px;
             width: 100%;
             padding-bottom: 30px;
@@ -31,36 +28,62 @@
             flex-direction: column;
         }
 
-        .recipe-card:active {
-            transform: scale(0.95);
-        }
+        .recipe-card:active { transform: scale(0.95); }
 
-        .card-image {
-            width: 100%;
-            aspect-ratio: 1/1; /* 正方形 */
-            object-fit: cover;
-        }
+        .card-image { width: 100%; aspect-ratio: 1/1; object-fit: cover; }
 
-        .card-info {
-            padding: 10px;
-            text-align: left;
-        }
+        .card-info { padding: 10px; text-align: left; }
 
         .card-title {
             font-size: 0.9rem;
             font-weight: bold;
             color: #333;
-            margin: 0 0 5px 0;
+            margin: 0;
             display: -webkit-box;
-            -webkit-line-clamp: 2; /* 2行で省略 */
+            -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
 
-        .card-date {
-            font-size: 0.7rem;
-            color: #aaa;
+        /* --- 詳細モーダルのスタイル --- */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
         }
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            max-height: 85vh;
+            overflow-y: auto;
+            border-radius: 20px;
+            padding: 20px;
+            position: relative;
+            text-align: left;
+        }
+        .close-btn {
+            position: sticky;
+            top: 0;
+            float: right;
+            font-size: 1.5rem;
+            cursor: pointer;
+            background: #f0f0f0;
+            border-radius: 50%;
+            width: 35px; height: 35px;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 10;
+        }
+        .modal-body h2 { color: #ff6b6b; font-size: 1.3rem; margin-top: 10px; }
+        .modal-body h4 { border-bottom: 2px solid #fff0f0; margin: 20px 0 10px 0; padding-bottom: 5px; color: #ff6b6b; }
+        .modal-body ul { padding-left: 20px; }
+        .modal-body li { margin-bottom: 8px; line-height: 1.4; }
+        .modal-image { width: 100%; border-radius: 15px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .summary-text { color: #666; font-style: italic; background: #fff9f9; padding: 10px; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -76,13 +99,54 @@
         </button>
     </div>
 
+    <div id="recipe-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <div id="modal-body" class="modal-body"></div>
+        </div>
+    </div>
+
     <script>
+        // モーダルを表示する関数
+        function showDetail(recipe) {
+            const modal = document.getElementById('recipe-modal');
+            const body = document.getElementById('modal-body');
+            
+            // 作り方(steps)の整形
+            const stepsHtml = recipe.steps 
+                ? recipe.steps.split('\n').map((step, i) => `<li><strong>${i+1}.</strong> ${step}</li>`).join('')
+                : '<li>手順情報なし</li>';
+
+            // 材料(ingredients)の整形
+            const ingredientsHtml = Array.isArray(recipe.ingredients) && recipe.ingredients.length > 0
+                ? recipe.ingredients.join('、') 
+                : '不明';
+
+            body.innerHTML = `
+                <img src="${recipe.image || './img/gurumeika-3.jpg'}" class="modal-image">
+                <h2>${recipe.recipeName}</h2>
+                <div class="summary-text">${recipe.description || '解説なし'}</div>
+                
+                <h4>材料</h4>
+                <p>${ingredientsHtml}</p>
+                
+                <h4>作り方</h4>
+                <ul>${stepsHtml}</ul>
+            `;
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('recipe-modal').style.display = 'none';
+        }
+
+        // データベースからレシピを取得
         async function loadCollection() {
             try {
                 const response = await fetch('/api/my-recipes');
                 const recipes = await response.json();
                 const listElement = document.getElementById('recipe-list');
-                listElement.innerHTML = ''; // クリア
+                listElement.innerHTML = '';
 
                 if (recipes.length === 0) {
                     listElement.innerHTML = '<p style="grid-column: 1/-1; padding:20px;">まだレシピがありません。<br>いろいろ作ってみよう！</p>';
@@ -92,7 +156,6 @@
                 recipes.forEach(recipe => {
                     const card = document.createElement('div');
                     card.className = 'recipe-card';
-                    // 画像がない場合のデフォルト画像
                     const imgUrl = recipe.image || './img/gurumeika-3.jpg';
                     
                     card.innerHTML = `
@@ -101,19 +164,22 @@
                             <h3 class="card-title">${recipe.recipeName}</h3>
                         </div>
                     `;
-                    // クリックで詳細へ（IDをクエリで渡すなどの実装が必要ですが、今はアラートで確認）
-                    card.onclick = () => { 
-                        // 詳細ページへ飛ぶなら: location.href = `recipe-finish.html?id=${recipe.id}`; 
-                        // ※recipe-finish.js側でURLパラメータを受け取る改造が必要になります
-                        alert(`「${recipe.recipeName}」\n${recipe.description || ''}`); 
-                    };
+                    // クリックで詳細モーダルを表示
+                    card.onclick = () => showDetail(recipe);
                     listElement.appendChild(card);
                 });
             } catch (e) {
                 console.error(e);
-                document.getElementById('recipe-list').innerHTML = '<p>読み込みエラー</p>';
+                document.getElementById('recipe-list').innerHTML = '<p>読み込みエラーが発生しました</p>';
             }
         }
+
+        // モーダルの外側をクリックしたら閉じる設定
+        window.onclick = (event) => {
+            const modal = document.getElementById('recipe-modal');
+            if (event.target == modal) closeModal();
+        };
+
         loadCollection();
     </script>
 </body>

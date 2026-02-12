@@ -236,45 +236,64 @@ app.post('/api/generate-recipe', async (req, res) => {
     }
 });
 
+// --- server.js 内の /api/gacha 部分を以下に差し替え ---
+
 app.get('/api/gacha', (req, res) => {
+    // RANDOM() で1件取得
     const sql = `SELECT * FROM recipes ORDER BY RANDOM() LIMIT 1;`;
+    
     db.get(sql, [], async (err, row) => {
-        if (err) return res.status(500).json({ error: err.message });
-        if (!row) return res.json(null);
+        if (err) {
+            console.error("DB Error:", err.message);
+            return res.status(500).json({ error: err.message });
+        }
+        if (!row) {
+            return res.json(null); // データがない場合
+        }
 
         try {
             let imageUrl = row.image;
             let ingredients = [];
             let needsUpdate = false;
 
+            // 材料データの復元
             if (row.ingredients) {
-                try { ingredients = JSON.parse(row.ingredients); } catch(e) { ingredients = ["不明"]; }
+                try { 
+                    // 文字列ならパース、配列ならそのまま
+                    ingredients = typeof row.ingredients === 'string' ? JSON.parse(row.ingredients) : row.ingredients; 
+                } catch(e) { 
+                    ingredients = ["不明"]; 
+                }
             } else {
-                console.log(`ガチャ: 材料推測...`);
+                // 材料がない場合はAIで推測
+                console.log(`ガチャ: 材料推測中...`);
                 ingredients = await callGeminiExtractIngredients(row.recipeName, row.description);
                 needsUpdate = true;
             }
 
-            if (!imageUrl) {
-                console.log(`ガチャ: 画像生成...`);
+            // 画像がない場合はAIで生成
+            if (!imageUrl || imageUrl.startsWith('/img/')) {
+                console.log(`ガチャ: 画像生成中...`);
                 try {
                     imageUrl = await callStabilityImageAPI(`(best quality, food photography:1.3), Delicious dish "${row.recipeName}". Style: Experimental cuisine.`);
                     needsUpdate = true;
                 } catch (e) {
                     console.error("画像生成失敗:", e.message);
-                    imageUrl = '/img/gurumeika-3.jpg';
+                    imageUrl = '/img/gurumeika-3.jpg'; // 失敗時のフォールバック
                 }
             }
 
+            // 不足データがあった場合のみDBを更新
             if (needsUpdate) {
                 const updateSql = `UPDATE recipes SET image = ?, ingredients = ? WHERE id = ?`;
                 db.run(updateSql, [imageUrl, JSON.stringify(ingredients), row.id]);
             }
 
+            // クライアントへ返却
             res.json({ ...row, ingredients, imageUrl });
         } catch (e) {
-            console.error(e);
-            res.status(500).json({ error: "ガチャエラー" });
+            console.error("Gacha Process Error:", e);
+            res.status(500).json({ error: "ガチャ処理中にエラーが発生しました" });
         }
     });
 });
