@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ログイン | グルメメイカー</title>
+    <link rel="stylesheet" href="./css/common.css">
+    <link rel="stylesheet" href="./css/material-input.css">
+    <style>
+        .login-container {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 90%;
+            margin: 0 auto;
+        }
+        .toggle-btn {
+            background: none;
+            border: none;
+            color: #ff6b6b;
+            cursor: pointer;
+            text-decoration: underline;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" style="display:flex; justify-content:center; align-items:center; height:100vh;">
+        <div class="login-container">
+            <h2 id="form-title" style="color:#ff6b6b; text-align:center;">ログイン</h2>
+            
+            <div class="input-group">
+                <input type="text" id="username" required>
+                <label>ユーザー名</label>
+            </div>
+            
+            <div class="input-group">
+                <input type="password" id="password" required>
+                <label>パスワード</label>
+            </div>
+
+            <button id="submit-btn" class="button" style="width:100%; margin-top:20px;">ログイン</button>
+            
+            <div style="text-align:center;">
+                <button id="toggle-mode" class="toggle-btn">アカウント作成はこちら</button>
+            </div>
+        </div>
+    </div>
+    <script src="./js/login.js"></script>
+    <script src="./js/material-input.js"></script>
+</body>
+</html>

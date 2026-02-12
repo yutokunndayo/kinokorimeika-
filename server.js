@@ -1,63 +1,79 @@
 const express = require('express');
 const https = require('https');
 const path = require('path');
-const fs = require('fs'); // ファイルシステム操作用
+const fs = require('fs');
 const FormData = require('form-data');
 const sqlite3 = require('sqlite3').verbose();
 const { HttpsProxyAgent } = require('https-proxy-agent');
+const session = require('express-session'); // 追加
+const bcrypt = require('bcryptjs'); // 追加
 require('dotenv').config();
 
 const app = express();
 const PORT = 3000;
 const HOST = '0.0.0.0';
 
-// JSONの解析制限を10MBに拡大（画像データ送信に対応）
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static('public'));
 
-// --- 画像保存用のディレクトリ設定 ---
+// --- セッション設定 (ログイン状態の維持) ---
+app.use(session({
+    secret: 'my-secret-key-kinoko', // 本番では推測困難な文字列にしてください
+    resave: false,
+    saveUninitialized: false,
+    cookie: { maxAge: 1000 * 60 * 60 * 24 } // 1日有効
+}));
+
 const UPLOAD_DIR = path.join(__dirname, 'public', 'img', 'recipes');
 if (!fs.existsSync(UPLOAD_DIR)) {
     fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 }
 
-// --- データベース接続と初期化 ---
+// --- データベース初期化 ---
 const db = new sqlite3.Database(path.join(__dirname, 'yaminabe.db'), (err) => {
     if (err) return console.error('DB接続エラー:', err.message);
     console.log('データベース接続成功');
     
-    // テーブル作成（材料・手順・画像パスを保持）
+    // ユーザーテーブル作成
+    db.run(`CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE,
+        password TEXT
+    )`);
+
+    // レシピテーブル作成（userIdカラムを追加）
     db.run(`CREATE TABLE IF NOT EXISTS recipes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         recipeName TEXT,
         description TEXT,
         steps TEXT,
         image TEXT,
-        ingredients TEXT
-    )`);
+        ingredients TEXT,
+        userId INTEGER
+    )`, () => {
+        // 既存のテーブルに userId がない場合の対応（カラム追加）
+        db.run(`ALTER TABLE recipes ADD COLUMN userId INTEGER`, (err) => {
+            // エラーが出ても（すでにカラムがある場合など）無視して続行
+        });
+    });
 });
 
-// --- ユーティリティ関数 ---
-
-// APIキーのクリーニング
+// --- ユーティリティ ---
 function getCleanApiKey(keyName) {
     const key = process.env[keyName];
     return key ? key.replace(/[^\x21-\x7E]/g, '') : "";
 }
 
-// プロキシ設定
 function getProxyAgent() {
     const proxyUrl = process.env.HTTPS_PROXY || process.env.HTTP_PROXY;
     return proxyUrl ? new HttpsProxyAgent(proxyUrl) : null;
 }
 
-// AIのレスポンス（JSON）を安全にパースする
 function parseCleanJSON(text) {
     try {
         text = text.replace(/```json/g, '').replace(/```/g, '');
         const match = text.match(/\{[\s\S]*\}/);
         if (match) text = match[0];
-        text = text.replace(/,(\s*[\]}])/g, '$1');
         return JSON.parse(text);
     } catch (e) {
         console.error("JSONパース失敗:", text);
@@ -65,24 +81,16 @@ function parseCleanJSON(text) {
     }
 }
 
-// --- AI API連携 (Gemini & Stability) ---
-
-// レシピ生成 (Gemini)
+// --- AI API関連 ---
 async function callGeminiTextAPI(ingredients, theme) {
     const apiKey = getCleanApiKey('GEMINI_API_KEY');
-    if (!apiKey) throw new Error("GEMINI_API_KEYが未設定です");
+    if (!apiKey) throw new Error("GEMINI_API_KEY未設定");
 
     const promptText = `
-    あなたはクリエイティブなシェフです。以下の食材とテーマを使って、ユニークなレシピを考案してください。
+    以下の食材とテーマでレシピを考案してください。
     【食材】: ${ingredients.join(', ')}
-    【テーマ】: ジャンル「${theme.genre}」、気分「${theme.mood}」
-    以下のフォーマットの **JSONデータのみ** を出力してください。
-    {
-        "recipeName": "料理名",
-        "summary": "キャッチコピー",
-        "detail": "解説",
-        "steps": ["手順1", "手順2", "手順3"]
-    }
+    【テーマ】: ${theme.genre}, ${theme.mood}
+    JSON形式のみ出力: {"recipeName": "", "summary": "", "detail": "", "steps": [""]}
     `;
 
     const requestData = JSON.stringify({
@@ -98,17 +106,15 @@ async function callGeminiTextAPI(ingredients, theme) {
             headers: { 'Content-Type': 'application/json' },
             agent: getProxyAgent()
         };
-
         const req = https.request(options, (res) => {
             let data = '';
-            res.on('data', chunk => data += chunk);
+            res.on('data', c => data += c);
             res.on('end', () => {
-                if (res.statusCode !== 200) return reject(new Error(`APIエラー: ${res.statusCode}`));
+                if(res.statusCode!==200) return reject(new Error("Gemini Error"));
                 try {
                     const json = JSON.parse(data);
-                    const text = json.candidates[0].content.parts[0].text;
-                    resolve(parseCleanJSON(text));
-                } catch (e) { reject(e); }
+                    resolve(parseCleanJSON(json.candidates[0].content.parts[0].text));
+                } catch(e) { reject(e); }
             });
         });
         req.write(requestData);
@@ -116,11 +122,9 @@ async function callGeminiTextAPI(ingredients, theme) {
     });
 }
 
-// 画像生成 & 保存 (Stability AI)
 async function callStabilityImageAPI(prompt) {
     const apiKey = getCleanApiKey('STABILITY_API_KEY');
-    if (!apiKey) throw new Error("STABILITY_API_KEYが未設定です");
-
+    if(!apiKey) throw new Error("STABILITY_API_KEY未設定");
     const form = new FormData();
     form.append('prompt', prompt);
     form.append('output_format', 'png');
@@ -133,167 +137,128 @@ async function callStabilityImageAPI(prompt) {
             headers: { ...form.getHeaders(), 'Authorization': `Bearer ${apiKey}`, 'Accept': 'image/*' },
             agent: getProxyAgent()
         };
-
         const req = https.request(options, (res) => {
-            if (res.statusCode !== 200) return reject(new Error(`Stability Error: ${res.statusCode}`));
-            
+            if(res.statusCode!==200) return reject(new Error("Stability Error"));
             const fileName = `recipe_${Date.now()}.png`;
             const filePath = path.join(UPLOAD_DIR, fileName);
             const fileStream = fs.createWriteStream(filePath);
-
             res.pipe(fileStream);
-
-            fileStream.on('finish', () => {
-                fileStream.close();
-                resolve(`/img/recipes/${fileName}`);
-            });
+            fileStream.on('finish', () => resolve(`/img/recipes/${fileName}`));
         });
-
-        req.on('error', e => reject(e));
         form.pipe(req);
     });
 }
 
-// 材料推測 (Gemini)
-async function callGeminiExtractIngredients(recipeName, description) {
-    const apiKey = getCleanApiKey('GEMINI_API_KEY');
-    if (!apiKey) return ["不明な食材"];
+// --- 認証用エンドポイント ---
 
-    const promptText = `料理名「${recipeName}」と解説「${description}」から、食材を3〜5つリストアップしてください。形式: { "ingredients": ["食材1", "食材2"] }`;
+// ユーザー登録
+app.post('/api/register', (req, res) => {
+    const { username, password } = req.body;
+    if (!username || !password) return res.status(400).json({ error: "入力が不足しています" });
 
-    const requestData = JSON.stringify({
-        contents: [{ parts: [{ text: promptText }] }],
-        generationConfig: { responseMimeType: "application/json" }
+    const hashedPassword = bcrypt.hashSync(password, 10);
+    db.run(`INSERT INTO users (username, password) VALUES (?, ?)`, [username, hashedPassword], function(err) {
+        if (err) return res.status(400).json({ error: "ユーザー名が既に使用されています" });
+        
+        // 登録後そのままログインさせる
+        req.session.userId = this.lastID;
+        req.session.username = username;
+        res.json({ success: true });
     });
+});
 
-    return new Promise((resolve) => {
-        const options = {
-            hostname: 'generativelanguage.googleapis.com',
-            path: `/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            agent: getProxyAgent()
-        };
-
-        const req = https.request(options, (res) => {
-            let data = '';
-            res.on('data', chunk => data += chunk);
-            res.on('end', () => {
-                try {
-                    const result = parseCleanJSON(JSON.parse(data).candidates[0].content.parts[0].text);
-                    resolve(result.ingredients || ["不明"]);
-                } catch (e) { resolve(["不明"]); }
-            });
-        });
-        req.write(requestData);
-        req.end();
+// ログイン
+app.post('/api/login', (req, res) => {
+    const { username, password } = req.body;
+    db.get(`SELECT * FROM users WHERE username = ?`, [username], (err, user) => {
+        if (err || !user || !bcrypt.compareSync(password, user.password)) {
+            return res.status(401).json({ error: "ユーザー名またはパスワードが違います" });
+        }
+        req.session.userId = user.id;
+        req.session.username = user.username;
+        res.json({ success: true });
     });
-}
+});
 
-// --- APIエンドポイント ---
+// ログアウト
+app.post('/api/logout', (req, res) => {
+    req.session.destroy();
+    res.json({ success: true });
+});
 
-// 1. レシピ生成API
+// 現在のログイン状態確認
+app.get('/api/me', (req, res) => {
+    if (req.session.userId) {
+        res.json({ loggedIn: true, username: req.session.username });
+    } else {
+        res.json({ loggedIn: false });
+    }
+});
+
+
+// --- レシピ関連エンドポイント ---
+
 app.post('/api/generate-recipe', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "ログインしてください" });
     try {
-        const { ingredients, theme } = req.body;
-        const aiRecipe = await callGeminiTextAPI(ingredients, theme);
-        aiRecipe.description = `${aiRecipe.summary} ${aiRecipe.detail}`;
-        res.json(aiRecipe);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ recipeName: "エラー", description: "AI生成に失敗しました", steps: ["もう一度お試しください"] });
-    }
+        const data = await callGeminiTextAPI(req.body.ingredients, req.body.theme);
+        data.description = `${data.summary} ${data.detail}`;
+        res.json(data);
+    } catch(e) { res.status(500).json({ error: "生成失敗" }); }
 });
 
-// 2. 画像生成API
 app.post('/api/generate-image', async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "ログインしてください" });
     try {
-        const imageUrl = await callStabilityImageAPI(req.body.prompt);
-        res.json({ imageUrl });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ imageUrl: '/img/gurumeika-3.jpg' });
-    }
+        const url = await callStabilityImageAPI(req.body.prompt);
+        res.json({ imageUrl: url });
+    } catch(e) { res.status(500).json({ imageUrl: '/img/gurumeika-3.jpg' }); }
 });
 
-// 3. レシピ保存API
 app.post('/api/save-recipe', (req, res) => {
+    // ログインチェック
+    if (!req.session.userId) return res.status(401).json({ error: "ログインが必要です" });
+
     let { recipeName, description, steps, image, ingredients } = req.body;
-    
-    // 画像がBase64の場合、ファイルとして保存しパスに変換
     if (image && image.startsWith('data:image')) {
-        try {
-            const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
-            const fileName = `saved_${Date.now()}.png`;
-            fs.writeFileSync(path.join(UPLOAD_DIR, fileName), base64Data, 'base64');
-            image = `/img/recipes/${fileName}`;
-        } catch (e) {
-            console.error("画像保存失敗:", e);
-        }
+        const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
+        const fileName = `saved_${Date.now()}.png`;
+        fs.writeFileSync(path.join(UPLOAD_DIR, fileName), base64Data, 'base64');
+        image = `/img/recipes/${fileName}`;
     }
 
-    const stepsString = Array.isArray(steps) ? steps.join('\n') : steps;
-    const ingredientsString = JSON.stringify(ingredients || []);
-    
-    const sql = `INSERT INTO recipes (recipeName, description, steps, image, ingredients) VALUES (?, ?, ?, ?, ?)`;
-    db.run(sql, [recipeName, description, stepsString, image, ingredientsString], function(err) {
-        if (err) return res.status(500).json({ success: false });
-        res.json({ success: true, id: this.lastID });
-    });
-});
+    const stepsStr = Array.isArray(steps) ? steps.join('\n') : steps;
+    const ingStr = JSON.stringify(ingredients || []);
+    const userId = req.session.userId; // セッションからID取得
 
-// 4. ガチャAPI
-app.get('/api/gacha', (req, res) => {
-    const sql = `SELECT * FROM recipes ORDER BY RANDOM() LIMIT 1;`;
-    db.get(sql, [], async (err, row) => {
-        if (err || !row) return res.json(null);
-
-        try {
-            let imageUrl = row.image;
-            let ingredients = [];
-            let needsUpdate = false;
-
-            // 材料データの復元
-            if (row.ingredients) {
-                try { ingredients = JSON.parse(row.ingredients); } catch(e) { ingredients = ["不明"]; }
-            } else {
-                ingredients = await callGeminiExtractIngredients(row.recipeName, row.description);
-                needsUpdate = true;
-            }
-
-            // 画像がない、または古いデフォルト画像の場合は生成を試みる
-            if (!imageUrl || imageUrl.startsWith('/img/gurumeika-')) {
-                try {
-                    imageUrl = await callStabilityImageAPI(`Gourmet photography of ${row.recipeName}`);
-                    needsUpdate = true;
-                } catch (e) { imageUrl = '/img/gurumeika-3.jpg'; }
-            }
-
-            if (needsUpdate) {
-                db.run(`UPDATE recipes SET image = ?, ingredients = ? WHERE id = ?`, 
-                    [imageUrl, JSON.stringify(ingredients), row.id]);
-            }
-
-            res.json({ ...row, ingredients, imageUrl });
-        } catch (e) {
-            res.status(500).json({ error: "ガチャ処理エラー" });
-        }
-    });
-});
-
-// 5. マイリスト（図鑑）取得API
-app.get('/api/my-recipes', (req, res) => {
-    db.all(`SELECT * FROM recipes ORDER BY id DESC`, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        const recipes = rows.map(row => {
-            try { row.ingredients = row.ingredients ? JSON.parse(row.ingredients) : []; }
-            catch (e) { row.ingredients = []; }
-            return row;
+    db.run(`INSERT INTO recipes (recipeName, description, steps, image, ingredients, userId) VALUES (?, ?, ?, ?, ?, ?)`,
+        [recipeName, description, stepsStr, image, ingStr, userId], function(err) {
+            if (err) return res.status(500).json({ success: false });
+            res.json({ success: true });
         });
-        res.json(recipes);
+});
+
+// マイレシピ取得（自分のデータだけ）
+app.get('/api/my-recipes', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "ログインしてください" });
+
+    db.all(`SELECT * FROM recipes WHERE userId = ? ORDER BY id DESC`, [req.session.userId], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows.map(row => {
+            try { row.ingredients = JSON.parse(row.ingredients); } catch(e) { row.ingredients = []; }
+            return row;
+        }));
     });
 });
 
-app.listen(PORT, HOST, () => {
-    console.log(`サーバー起動: http://localhost:${PORT}`);
+// ガチャ（全ユーザーのレシピからランダム ※ここはあえて全公開にするのが一般的ですが、制限したい場合はここも修正可）
+app.get('/api/gacha', (req, res) => {
+    // ガチャはログイン不要で遊べるようにしています
+    db.get(`SELECT * FROM recipes ORDER BY RANDOM() LIMIT 1;`, [], (err, row) => {
+        if (err || !row) return res.json(null);
+        try { row.ingredients = JSON.parse(row.ingredients); } catch(e){}
+        res.json(row);
+    });
 });
+
+app.listen(PORT, HOST, () => console.log(`http://localhost:${PORT}`));

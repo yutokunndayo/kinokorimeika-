@@ -8,6 +8,30 @@
     <link rel="stylesheet" href="./css/common.css">
 </head>
 <body>
+    <div style="position:absolute; top:10px; right:10px;">
+    <span id="user-display" style="margin-right:10px; font-weight:bold;"></span>
+    <button id="auth-btn" class="button" style="padding:5px 15px; font-size:0.8rem;">ログイン</button>
+</div>
+
+<script>
+    // ログイン状態チェック
+    fetch('/api/me').then(r => r.json()).then(data => {
+        const btn = document.getElementById('auth-btn');
+        const display = document.getElementById('user-display');
+        
+        if (data.loggedIn) {
+            display.textContent = `${data.username}さん`;
+            btn.textContent = 'ログアウト';
+            btn.onclick = async () => {
+                await fetch('/api/logout', { method: 'POST' });
+                window.location.reload();
+            };
+        } else {
+            btn.textContent = 'ログイン';
+            btn.onclick = () => window.location.href = './login.html';
+        }
+    });
+</script>
     <div class="container">
         <div class="title-logo">
             <img src="./img/gurumeika-.png" alt="グルメメイカー" class="main-logo">

@@ -139,17 +139,21 @@
             document.getElementById('recipe-modal').style.display = 'none';
         }
 
-        async function loadCollection() {
-            try {
-                const response = await fetch('/api/my-recipes');
-                const recipes = await response.json();
-                const listElement = document.getElementById('recipe-list');
-                listElement.innerHTML = '';
+       // public/collection.html の <script> 内
 
-                if (!recipes || recipes.length === 0) {
-                    listElement.innerHTML = '<p style="grid-column: 1/-1; padding:20px;">まだレシピがありません。<br>いろいろ作ってみよう！</p>';
-                    return;
-                }
+async function loadCollection() {
+    try {
+        const response = await fetch('/api/my-recipes');
+        
+        // ★ 追加: ログインしていない場合
+        if (response.status === 401) {
+            alert("マイレシピを見るにはログインが必要です");
+            window.location.href = './login.html';
+            return;
+        }
+
+        const recipes = await response.json();
+        // ... (以下変更なし)
 
                 recipes.forEach(recipe => {
                     const card = document.createElement('div');
