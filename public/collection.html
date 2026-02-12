@@ -38,8 +38,7 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
-
-        /* モーダル（詳細画面）のスタイル */
+        /* モーダル */
         .modal {
             display: none;
             position: fixed;
@@ -101,36 +100,28 @@
     </div>
 
     <script>
-        // モーダルを表示
         function showDetail(recipe) {
             const modal = document.getElementById('recipe-modal');
             const body = document.getElementById('modal-body');
             
-            // 手順の整形
             let stepsHtml = '<li>手順情報なし</li>';
             if (recipe.steps) {
                 const stepsArray = typeof recipe.steps === 'string' ? recipe.steps.split('\n') : recipe.steps;
                 stepsHtml = stepsArray.map((step, i) => `<li><strong>${i+1}.</strong> ${step}</li>`).join('');
             }
 
-            // 材料の整形
             const ingredientsHtml = Array.isArray(recipe.ingredients) && recipe.ingredients.length > 0
                 ? recipe.ingredients.join('、') 
                 : '不明';
 
-            // 画像パスの調整
             const imgSrc = recipe.image || './img/gurumeika-3.jpg';
 
             body.innerHTML = `
                 <img src="${imgSrc}" class="modal-image">
                 <h2>${recipe.recipeName}</h2>
                 <div class="summary-text">${recipe.description || '解説なし'}</div>
-                
-                <h4>材料</h4>
-                <p>${ingredientsHtml}</p>
-                
-                <h4>作り方</h4>
-                <ul>${stepsHtml}</ul>
+                <h4>材料</h4><p>${ingredientsHtml}</p>
+                <h4>作り方</h4><ul>${stepsHtml}</ul>
             `;
             modal.style.display = 'flex';
         }
@@ -139,21 +130,30 @@
             document.getElementById('recipe-modal').style.display = 'none';
         }
 
-       // public/collection.html の <script> 内
+        window.onclick = (event) => {
+            if (event.target == document.getElementById('recipe-modal')) closeModal();
+        };
 
-async function loadCollection() {
-    try {
-        const response = await fetch('/api/my-recipes');
-        
-        // ★ 追加: ログインしていない場合
-        if (response.status === 401) {
-            alert("マイレシピを見るにはログインが必要です");
-            window.location.href = './login.html';
-            return;
-        }
+        // --- ここから読み込み処理 ---
+        async function loadCollection() {
+            try {
+                const response = await fetch('/api/my-recipes');
+                
+                // ログインしていない場合
+                if (response.status === 401) {
+                    alert("マイレシピを見るにはログインが必要です");
+                    window.location.href = './login.html';
+                    return;
+                }
 
-        const recipes = await response.json();
-        // ... (以下変更なし)
+                const recipes = await response.json();
+                const listElement = document.getElementById('recipe-list');
+                listElement.innerHTML = '';
+
+                if (!recipes || recipes.length === 0) {
+                    listElement.innerHTML = '<p style="grid-column: 1/-1; padding:20px;">まだレシピがありません。<br>いろいろ作ってみよう！</p>';
+                    return;
+                }
 
                 recipes.forEach(recipe => {
                     const card = document.createElement('div');
@@ -174,11 +174,6 @@ async function loadCollection() {
                 document.getElementById('recipe-list').innerHTML = '<p>読み込みエラーが発生しました</p>';
             }
         }
-
-        window.onclick = (event) => {
-            const modal = document.getElementById('recipe-modal');
-            if (event.target == modal) closeModal();
-        };
 
         loadCollection();
     </script>

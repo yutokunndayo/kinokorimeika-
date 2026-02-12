@@ -8,18 +8,13 @@
     <link rel="stylesheet" href="./css/gacha.css">
     
     <style>
-        /* --- UI調整スタイル --- */
-        
         .gacha-machine-container {
             background: #fff;
             border-radius: 20px;
-            /* 余白を小さくして高さを抑える */
             padding: 20px 15px;
             margin: 15px auto;
             max-width: 500px;
-            /* 高さは中身に合わせて自動調整（固定しない） */
             height: auto;
-            
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
@@ -28,48 +23,37 @@
             text-align: center;
             position: relative;
         }
-
-        /* 待機画面のエリア（余白削減） */
         .machine-illustration {
             display: block;
             padding: 10px 0; 
         }
-
-        /* 絵文字を少し小さくして高さを節約 */
         .emoji-icon {
             font-size: 3.5rem; 
             display: inline-block;
             margin-bottom: 5px;
             animation: float 3s ease-in-out infinite;
         }
-
         @keyframes float {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-8px); }
         }
-
         .machine-text {
             font-size: 0.95rem;
             color: #666;
             line-height: 1.5;
         }
-
-        /* 結果表示エリア */
         .result-view {
             display: none;
             width: 100%;
             animation: fadeIn 0.5s ease forwards;
         }
-
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
-        /* 画像コンテナ：サイズを抑えて縦長化を防ぐ */
         .image-container {
             width: 100%;
-            max-width: 240px; /* 画像サイズを少し縮小 */
+            max-width: 240px;
             aspect-ratio: 1 / 1;
             margin: 0 auto 10px;
             border-radius: 15px;
@@ -77,13 +61,11 @@
             background: #f9f9f9;
             border: 3px solid #ffe3e3;
         }
-
         .gacha-image {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-
         .recipe-name {
             font-size: 1.2rem;
             color: #ff6b6b;
@@ -91,15 +73,12 @@
             font-weight: bold;
             line-height: 1.3;
         }
-
         .description-text {
             font-size: 0.85rem;
             color: #666;
             margin-bottom: 10px;
             line-height: 1.4;
         }
-
-        /* 材料リスト */
         .ingredients-list {
             list-style: none;
             padding: 0;
@@ -109,7 +88,6 @@
             gap: 6px;
             margin-bottom: 0;
         }
-
         .ingredients-list li {
             background: #fff0f0;
             color: #ff6b6b;
@@ -118,8 +96,6 @@
             font-size: 0.8rem;
             border: 1px solid #ffcaca;
         }
-
-        /* ボタン周り */
         .button-group {
             display: flex;
             flex-direction: column;
@@ -127,12 +103,11 @@
             max-width: 300px;
             margin: 10px auto 0;
         }
-
         .draw-button {
             background: #ff6b6b;
             color: white;
             border: none;
-            padding: 12px 30px; /* ボタンも少しスリムに */
+            padding: 12px 30px;
             border-radius: 30px;
             font-size: 1.1rem;
             font-weight: bold;
@@ -141,18 +116,15 @@
             transition: all 0.2s;
             width: 100%;
         }
-
         .draw-button:active {
             transform: translateY(2px);
             box-shadow: 0 2px 0 #d64545;
         }
-        
         .draw-button:disabled {
             background: #ccc;
             box-shadow: none;
             cursor: not-allowed;
         }
-
         .back-button {
             background: transparent;
             color: #888;
@@ -186,8 +158,7 @@
 
                 <div class="gacha-details">
                     <p id="gacha-description" class="description-text">解説テキスト</p>
-                    <ul id="gacha-ingredients" class="ingredients-list">
-                        </ul>
+                    <ul id="gacha-ingredients" class="ingredients-list"></ul>
                 </div>
             </div>
         </div>
@@ -210,7 +181,6 @@
             const descText = document.getElementById('gacha-description');
             const ingredientsList = document.getElementById('gacha-ingredients');
 
-            // --- 演出開始 ---
             btn.disabled = true;
             btn.textContent = "抽選中...";
             
@@ -219,7 +189,6 @@
             machineText.innerHTML = 'どれにしようかな...';
 
             try {
-                // API呼び出し
                 const response = await fetch('/api/gacha');
                 const recipe = await response.json();
 
@@ -231,9 +200,9 @@
                     return;
                 }
 
-                // --- データのセット ---
                 nameText.textContent = recipe.recipeName;
-                imgElement.src = recipe.imageUrl || './img/gurumeika-3.jpg';
+                // 修正箇所: imageUrl ではなく image を使う
+                imgElement.src = recipe.image || recipe.imageUrl || './img/gurumeika-3.jpg';
                 descText.textContent = recipe.description || "美味しいレシピです！";
 
                 ingredientsList.innerHTML = "";
@@ -249,11 +218,9 @@
                     ingredientsList.appendChild(li);
                 }
 
-                // --- 画面切り替え ---
                 setTimeout(() => {
                     machineView.style.display = 'none';
                     resultView.style.display = 'block';
-                    
                     btn.disabled = false;
                     btn.textContent = "もう一度回す";
                     machineText.innerHTML = '下のボタンを押して<br>今日のレシピを占おう！';
