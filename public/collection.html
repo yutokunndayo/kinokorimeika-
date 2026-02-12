@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="./css/common.css">
     <style>
         .page-title { color: #ff6b6b; margin-bottom: 20px; }
-
         .recipe-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -15,7 +14,6 @@
             width: 100%;
             padding-bottom: 30px;
         }
-
         .recipe-card {
             background: white;
             border-radius: 15px;
@@ -27,13 +25,9 @@
             display: flex;
             flex-direction: column;
         }
-
         .recipe-card:active { transform: scale(0.95); }
-
         .card-image { width: 100%; aspect-ratio: 1/1; object-fit: cover; }
-
         .card-info { padding: 10px; text-align: left; }
-
         .card-title {
             font-size: 0.9rem;
             font-weight: bold;
@@ -45,7 +39,7 @@
             overflow: hidden;
         }
 
-        /* --- 詳細モーダルのスタイル --- */
+        /* モーダル（詳細画面）のスタイル */
         .modal {
             display: none;
             position: fixed;
@@ -107,23 +101,28 @@
     </div>
 
     <script>
-        // モーダルを表示する関数
+        // モーダルを表示
         function showDetail(recipe) {
             const modal = document.getElementById('recipe-modal');
             const body = document.getElementById('modal-body');
             
-            // 作り方(steps)の整形
-            const stepsHtml = recipe.steps 
-                ? recipe.steps.split('\n').map((step, i) => `<li><strong>${i+1}.</strong> ${step}</li>`).join('')
-                : '<li>手順情報なし</li>';
+            // 手順の整形
+            let stepsHtml = '<li>手順情報なし</li>';
+            if (recipe.steps) {
+                const stepsArray = typeof recipe.steps === 'string' ? recipe.steps.split('\n') : recipe.steps;
+                stepsHtml = stepsArray.map((step, i) => `<li><strong>${i+1}.</strong> ${step}</li>`).join('');
+            }
 
-            // 材料(ingredients)の整形
+            // 材料の整形
             const ingredientsHtml = Array.isArray(recipe.ingredients) && recipe.ingredients.length > 0
                 ? recipe.ingredients.join('、') 
                 : '不明';
 
+            // 画像パスの調整
+            const imgSrc = recipe.image || './img/gurumeika-3.jpg';
+
             body.innerHTML = `
-                <img src="${recipe.image || './img/gurumeika-3.jpg'}" class="modal-image">
+                <img src="${imgSrc}" class="modal-image">
                 <h2>${recipe.recipeName}</h2>
                 <div class="summary-text">${recipe.description || '解説なし'}</div>
                 
@@ -140,7 +139,6 @@
             document.getElementById('recipe-modal').style.display = 'none';
         }
 
-        // データベースからレシピを取得
         async function loadCollection() {
             try {
                 const response = await fetch('/api/my-recipes');
@@ -148,7 +146,7 @@
                 const listElement = document.getElementById('recipe-list');
                 listElement.innerHTML = '';
 
-                if (recipes.length === 0) {
+                if (!recipes || recipes.length === 0) {
                     listElement.innerHTML = '<p style="grid-column: 1/-1; padding:20px;">まだレシピがありません。<br>いろいろ作ってみよう！</p>';
                     return;
                 }
@@ -164,7 +162,6 @@
                             <h3 class="card-title">${recipe.recipeName}</h3>
                         </div>
                     `;
-                    // クリックで詳細モーダルを表示
                     card.onclick = () => showDetail(recipe);
                     listElement.appendChild(card);
                 });
@@ -174,7 +171,6 @@
             }
         }
 
-        // モーダルの外側をクリックしたら閉じる設定
         window.onclick = (event) => {
             const modal = document.getElementById('recipe-modal');
             if (event.target == modal) closeModal();
